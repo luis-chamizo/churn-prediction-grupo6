@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # carpeta app/ (utils.py)
-from utils import (C_NO, C_SI, CATEGORY_OPTIONS, FEATURE_LABELS, MODEL_COLORS,  # noqa: E402
+from utils import (footer, page_header, section, C_NO, C_SI, CATEGORY_OPTIONS, FEATURE_LABELS, MODEL_COLORS,  # noqa: E402
                    PLOTLY_LAYOUT, RAW_FEATURES, RISK_COLORS, engineered_row, explain, fmt_value,
                    load_models, load_scored, recommend, risk_badge, risk_level,
                    sidebar_info, value_segment, what_if)
@@ -18,7 +18,10 @@ scored = load_scored()
 sidebar_info(meta)
 THR, HIGH = meta["umbral_decision"], meta["umbral_riesgo_alto"]
 
-st.title("🔮 Predicción individual de churn")
+page_header("🔮", "Predicción individual de churn",
+            "Evalúa un cliente de la cartera o ingresa sus datos: obtén su probabilidad de abandono, los factores "
+            "que la explican (SHAP), recomendaciones de retención priorizadas y un simulador de acciones.",
+            chips=[f"Modelo: {meta['modelo_final']}", f"Umbral: {THR:.0%}", f"Riesgo alto ≥ {HIGH:.0%}"])
 
 # -----------------------------------------------------
 # Selección de cliente o ingreso manual
@@ -35,14 +38,14 @@ opt = lambda col: CATEGORY_OPTIONS[col]  # noqa: E731
 idx = lambda col: opt(col).index(defaults[col]) if defaults[col] in opt(col) else 0  # noqa: E731
 
 with st.form("cliente"):
-    st.markdown("##### 👤 Perfil del cliente")
+    st.markdown("<div class='form-sec'>👤 Perfil del cliente</div>", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
     gender = c1.selectbox("Género", opt("gender"), index=idx("gender"))
     senior = c2.selectbox("Adulto mayor", ["No", "Sí"], index=int(defaults["SeniorCitizen"]))
     partner = c3.selectbox("Tiene pareja", opt("Partner"), index=idx("Partner"))
     dependents = c4.selectbox("Tiene dependientes", opt("Dependents"), index=idx("Dependents"))
 
-    st.markdown("##### 📡 Servicios contratados")
+    st.markdown("<div class='form-sec'>📡 Servicios contratados</div>", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
     phone = c1.selectbox("Servicio telefónico", opt("PhoneService"), index=idx("PhoneService"))
     lines = c2.selectbox("Múltiples líneas", opt("MultipleLines"), index=idx("MultipleLines"))
@@ -56,7 +59,7 @@ with st.form("cliente"):
     c1, c2, c3, c4 = st.columns(4)
     movies = c1.selectbox("Streaming películas", opt("StreamingMovies"), index=idx("StreamingMovies"))
 
-    st.markdown("##### 💳 Cuenta y facturación")
+    st.markdown("<div class='form-sec'>💳 Cuenta y facturación</div>", unsafe_allow_html=True)
     c1, c2, c3, c4 = st.columns(4)
     contract = c1.selectbox("Tipo de contrato", opt("Contract"), index=idx("Contract"))
     paperless = c2.selectbox("Factura electrónica", opt("PaperlessBilling"), index=idx("PaperlessBilling"))
@@ -94,7 +97,7 @@ p = float(final.predict_proba(X)[0, 1])
 nivel = risk_level(p, THR, HIGH)
 prioridad = value_segment(p, monthly * 12, THR, meta["corte_valor_alto"])
 
-st.divider()
+section("Resultado de la predicción")
 c1, c2, c3, c4 = st.columns([1.1, 1, 1, 1.4])
 c1.metric("Probabilidad de churn", f"{p:.1%}")
 c2.markdown("<div style='font-size:0.875rem;margin-bottom:0.6rem'>Nivel de riesgo</div>" + risk_badge(nivel),
@@ -116,7 +119,7 @@ col_a, col_b = st.columns([1.15, 1])
 
 # ---- Explicación SHAP
 with col_a:
-    st.subheader("¿Por qué este resultado? (SHAP)")
+    section("¿Por qué este resultado? (SHAP)")
     contrib = explain(final, meta["modelo_final"], X).iloc[0]
     fe_row = engineered_row(final, X)
     top = contrib.reindex(contrib.abs().sort_values(ascending=False).index).head(10)[::-1]
@@ -133,17 +136,17 @@ with col_a:
 
 # ---- Recomendaciones
 with col_b:
-    st.subheader("Recomendaciones de retención")
+    section("Recomendaciones de retención")
     recs = recommend({**row, **fe_row}, contrib.to_dict(), top_n=4)
     for i, r in enumerate(recs, 1):
-        with st.container(border=True):
-            st.markdown(f"**{i}. {r['accion']}**")
-            st.caption(r["detalle"])
-            st.caption(f"📞 Canal: {r['canal']} · Factor asociado: {r['variable']}"
-                       + (f" (SHAP {r['impacto']:+.2f})" if r["impacto"] else ""))
+        pill = f"<span class='pill'>SHAP {r['impacto']:+.2f}</span>" if r["impacto"] else ""
+        st.markdown(f"<div class='rec'><div class='t'>{i}. {r['accion']}{pill}</div>"
+                    f"<div class='d'>{r['detalle']}</div>"
+                    f"<div class='m'>📞 {r['canal']} · Factor asociado: {r['variable']}</div></div>",
+                    unsafe_allow_html=True)
 
 # ---- Simulación ¿qué pasaría si…?
-st.subheader("🧪 Simulador: ¿cuánto bajaría el riesgo con cada acción?")
+section("🧪 Simulador: ¿cuánto bajaría el riesgo con cada acción?")
 wi = what_if(final, row)
 if wi.empty:
     st.success("No hay acciones simulables para este cliente.")
@@ -166,3 +169,5 @@ with st.expander("Comparar la predicción de los 6 modelos"):
     fig.add_vline(x=THR, line_dash="dash", line_color="#898781")
     fig.update_layout(**PLOTLY_LAYOUT, height=300, xaxis=dict(range=[0, 1.1], tickformat=".0%"))
     st.plotly_chart(fig, width="stretch")
+
+footer()

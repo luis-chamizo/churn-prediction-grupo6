@@ -49,8 +49,8 @@ let sec = 0, sub = 0, figN = 0, tabN = 0;
 function body(text, opts = {}) {
   return new Paragraph({
     alignment: AlignmentType.JUSTIFIED,
-    indent: opts.noIndent ? undefined : { firstLine: 202 },
-    spacing: { after: 0, line: 228 },
+    indent: opts.noIndent ? undefined : { firstLine: 240 },
+    spacing: { after: 70, line: 260 },
     children: runs(text, { size: 20 }),
   });
 }
@@ -61,19 +61,19 @@ function block(b) {
       sec += 1; sub = 0;
       return [new Paragraph({
         alignment: AlignmentType.CENTER, keepNext: true,
-        spacing: { before: 200, after: 100 },
+        spacing: { before: 320, after: 140 },
         children: [new TextRun({ text: `${roman(sec)}. ${b.text.toUpperCase()}`, font: FONT, size: 20, smallCaps: true })],
       })];
     }
     case "h1_nonum":
       return [new Paragraph({
-        alignment: AlignmentType.CENTER, keepNext: true, spacing: { before: 200, after: 100 },
+        alignment: AlignmentType.CENTER, keepNext: true, spacing: { before: 320, after: 140 },
         children: [new TextRun({ text: b.text.toUpperCase(), font: FONT, size: 20, smallCaps: true })],
       })];
     case "h2": {
       sub += 1;
       return [new Paragraph({
-        keepNext: true, spacing: { before: 120, after: 60 },
+        keepNext: true, spacing: { before: 200, after: 90 },
         children: [new TextRun({ text: `${letters[sub - 1]}. ${b.text}`, font: FONT, size: 20, italics: true })],
       })];
     }
@@ -82,7 +82,7 @@ function block(b) {
     case "bullets":
       return b.items.map(t => new Paragraph({
         numbering: { reference: "bullets", level: 0 }, alignment: AlignmentType.JUSTIFIED,
-        spacing: { after: 0, line: 228 }, children: runs(t, { size: 20 }),
+        spacing: { after: 50, line: 260 }, children: runs(t, { size: 20 }),
       }));
     case "numbered":
       return b.items.map(t => new Paragraph({
@@ -91,7 +91,7 @@ function block(b) {
       }));
     case "eq":
       return [new Paragraph({
-        alignment: AlignmentType.CENTER, spacing: { before: 60, after: 60 },
+        alignment: AlignmentType.CENTER, spacing: { before: 120, after: 120 },
         children: [...runs(b.text, { size: 20, italics: false }),
           new TextRun({ text: `\t(${b.n})`, font: FONT, size: 20 })],
         tabStops: [{ type: "right", position: COL_W - 20 }],
@@ -106,12 +106,12 @@ function block(b) {
       const hpx = wpx * h / w;
       return [
         new Paragraph({
-          alignment: AlignmentType.CENTER, keepNext: true, spacing: { before: 120, after: 40 },
+          alignment: AlignmentType.CENTER, keepNext: true, spacing: { before: 200, after: 80 },
           children: [new ImageRun({ type: "png", data, transformation: { width: Math.round(wpx), height: Math.round(hpx) },
             altText: { title: `Fig. ${figN}`, description: b.caption, name: `fig${figN}` } })],
         }),
         new Paragraph({
-          alignment: AlignmentType.JUSTIFIED, spacing: { after: 140, line: 200 },
+          alignment: AlignmentType.JUSTIFIED, spacing: { after: 240, line: 220 },
           children: [new TextRun({ text: `Fig. ${figN}. `, font: FONT, size: 16 }), ...runs(b.caption, { size: 16 })],
         }),
       ];
@@ -129,7 +129,7 @@ function block(b) {
         tableHeader: i === 0, cantSplit: true,
         children: r.map((c, j) => new TableCell({
           width: { size: widths[j], type: WidthType.DXA },
-          margins: { top: 30, bottom: 30, left: 60, right: 60 },
+          margins: { top: 50, bottom: 50, left: 80, right: 80 },
           verticalAlign: VerticalAlign.CENTER,
           shading: i === 0 ? { fill: "EDEDED", type: ShadingType.CLEAR, color: "auto" } : undefined,
           borders: { top: border, bottom: border, left: none, right: none },
@@ -142,7 +142,7 @@ function block(b) {
       }));
       return [
         new Paragraph({
-          alignment: AlignmentType.CENTER, keepNext: true, spacing: { before: 140, after: 0 },
+          alignment: AlignmentType.CENTER, keepNext: true, spacing: { before: 220, after: 20 },
           children: [new TextRun({ text: `TABLA ${roman(tabN)}`, font: FONT, size: 16 })],
         }),
         new Paragraph({
@@ -151,12 +151,12 @@ function block(b) {
         }),
         new Table({ width: { size: total, type: WidthType.DXA }, columnWidths: widths, rows,
           alignment: AlignmentType.CENTER, layout: TableLayoutType.FIXED }),
-        new Paragraph({ spacing: { after: 100 }, children: b.note ? runs(b.note, { size: 14, italics: true }) : [] }),
+        new Paragraph({ spacing: { before: 40, after: 200 }, children: b.note ? runs(b.note, { size: 14, italics: true }) : [] }),
       ];
     }
     case "refs":
       return b.items.map((t, i) => new Paragraph({
-        alignment: AlignmentType.LEFT, spacing: { after: 30, line: 200 },
+        alignment: AlignmentType.LEFT, spacing: { after: 60, line: 220 },
         indent: { left: 360, hanging: 360 },
         children: [new TextRun({ text: `[${i + 1}]\t`, font: FONT, size: 16 }), ...runs(t, { size: 16 })],
         tabStops: [{ type: "left", position: 360 }],
@@ -169,29 +169,28 @@ function block(b) {
 // ---------- cabecera (una columna) ----------
 const header = [
   new Paragraph({
-    alignment: AlignmentType.CENTER, spacing: { after: 160 },
+    alignment: AlignmentType.CENTER, spacing: { before: 120, after: 280, line: 300 },
     children: [new TextRun({ text: spec.title, font: FONT, size: 44 })],
   }),
   new Paragraph({
-    alignment: AlignmentType.CENTER, spacing: { after: 40 },
-    children: [new TextRun({ text: spec.authors.join("     "), font: FONT, size: 22 })],
+    alignment: AlignmentType.CENTER, spacing: { after: 100 },
+    children: [new TextRun({ text: spec.authors.join("          "), font: FONT, size: 22 })],
   }),
-  ...spec.affiliation.map(a => new Paragraph({
-    alignment: AlignmentType.CENTER, spacing: { after: 0 },
+  ...spec.affiliation.map((a, i) => new Paragraph({
+    alignment: AlignmentType.CENTER, spacing: { after: i === spec.affiliation.length - 1 ? 480 : 30 },
     children: [new TextRun({ text: a, font: FONT, size: 18, italics: true })],
   })),
-  new Paragraph({ spacing: { after: 200 }, children: [] }),
 ];
 
 // ---------- cuerpo (dos columnas) ----------
 const abstract = [
   new Paragraph({
-    alignment: AlignmentType.JUSTIFIED, spacing: { after: 100, line: 216 },
+    alignment: AlignmentType.JUSTIFIED, spacing: { after: 140, line: 240 },
     children: [new TextRun({ text: "Resumen—", font: FONT, size: 18, bold: true, italics: true }),
       ...runs(spec.abstract, { size: 18, bold: true })],
   }),
   new Paragraph({
-    alignment: AlignmentType.JUSTIFIED, spacing: { after: 140, line: 216 },
+    alignment: AlignmentType.JUSTIFIED, spacing: { after: 240, line: 240 },
     children: [new TextRun({ text: "Palabras clave—", font: FONT, size: 18, bold: true, italics: true }),
       new TextRun({ text: spec.keywords, font: FONT, size: 18, bold: true })],
   }),

@@ -35,9 +35,11 @@ PRIORITY_COLORS = {
 }
 PLOTLY_LAYOUT = dict(
     template="plotly_white",
-    font=dict(family="system-ui, -apple-system, Segoe UI, sans-serif", size=13, color="#52514e"),
-    margin=dict(l=10, r=10, t=40, b=10),
-    hoverlabel=dict(font_size=12),
+    font=dict(family="Inter, system-ui, -apple-system, Segoe UI, sans-serif", size=13, color="#52514e"),
+    title_font=dict(size=15, color="#0f2742"),
+    paper_bgcolor="#ffffff", plot_bgcolor="#ffffff",
+    margin=dict(l=12, r=12, t=48, b=12),
+    hoverlabel=dict(font_size=12, font_family="Inter, sans-serif"),
 )
 
 
@@ -148,11 +150,47 @@ def risk_badge(level: str) -> str:
             f"font-weight:600;font-size:1.05rem'>{RISK_ICONS[level]} Riesgo {level}</span>")
 
 
+# =====================================================
+# DISEÑO DE LA INTERFAZ
+# =====================================================
+APP_DIR = Path(__file__).resolve().parent
+
+
+def apply_style():
+    css = (APP_DIR / "estilo.css").read_text(encoding="utf-8")
+    st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+
+
+def page_header(icon: str, title: str, subtitle: str, chips=None):
+    """Encabezado tipo 'hero' con título, descripción y etiquetas."""
+    chips_html = ("<div class='chips'>" + "".join(f"<span class='chip'>{c}</span>" for c in chips) + "</div>"
+                  if chips else "")
+    st.markdown(f"<div class='hero'><h1>{icon} {title}</h1><p>{subtitle}</p>{chips_html}</div>",
+                unsafe_allow_html=True)
+
+
+def section(title: str):
+    st.markdown(f"<div class='section-title'><div class='bar'></div><span>{title}</span></div>",
+                unsafe_allow_html=True)
+
+
+def footer():
+    st.markdown("<div class='app-foot'>Churn Prediction Inteligente · Grupo 6 · Luis Mario Chamizo Tiafi y "
+                "Juan Diego Chamizo Tiafi<br>Fundación Universitaria de Popayán · Especialización en Data Analytics "
+                "para Marketing Digital · Minería de Datos · 2026</div>", unsafe_allow_html=True)
+
+
 def sidebar_info(meta):
+    apply_style()
+    m = meta["metricas_test"][meta["modelo_final"]]
     with st.sidebar:
-        st.markdown("### Churn Prediction Inteligente")
-        st.caption("Grupo 6 · Luis Mario Chamizo Tiafi · Juan Diego Chamizo Tiafi")
-        st.markdown(f"**Modelo en producción:** {meta['modelo_final']}")
-        m = meta["metricas_test"][meta["modelo_final"]]
-        st.markdown(f"ROC-AUC test: **{m['ROC-AUC']:.3f}** · F1: **{m['F1']:.3f}**")
-        st.markdown(f"Umbral de decisión: **{meta['umbral_decision']:.2f}**")
+        st.markdown(
+            f"<div class='sb-card'><div class='lbl'>Modelo en producción</div>"
+            f"<div class='val'>{meta['modelo_final']}</div><div class='sb-grid'>"
+            f"<div><div class='lbl'>ROC-AUC</div><b>{m['ROC-AUC']:.3f}</b></div>"
+            f"<div><div class='lbl'>Recall</div><b>{m['Recall']:.1%}</b></div>"
+            f"<div><div class='lbl'>F1</div><b>{m['F1']:.3f}</b></div>"
+            f"<div><div class='lbl'>Umbral</div><b>{meta['umbral_decision']:.2f}</b></div></div></div>"
+            "<div class='sb-foot'>Grupo 6 · Luis Mario Chamizo Tiafi<br>Juan Diego Chamizo Tiafi<br>"
+            "Fundación Universitaria de Popayán</div>",
+            unsafe_allow_html=True)

@@ -8,19 +8,16 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # carpeta app/ (utils.py)
-from utils import (DATA, PLOTLY_LAYOUT, RAW_FEATURES, RISK_COLORS, clean_raw,  # noqa: E402
+from utils import (footer, page_header, section, DATA, PLOTLY_LAYOUT, RAW_FEATURES, RISK_COLORS, clean_raw,  # noqa: E402
                    load_models, score_frame, sidebar_info, validate_input)
 
 meta, final, _ = load_models()
 sidebar_info(meta)
 
-st.title("📂 Predicción por lotes (archivo CSV)")
-st.markdown(
-    "Sube un archivo CSV con las mismas columnas del dataset *Telco Customer Churn* "
-    "(la columna `customerID` es opcional y la columna `Churn` se ignora). "
-    "El modelo calcula la probabilidad de abandono, el nivel de riesgo, los factores SHAP "
-    "y las recomendaciones para cada cliente."
-)
+page_header("📂", "Predicción por lotes",
+            "Sube un archivo CSV con las columnas del dataset <i>Telco Customer Churn</i> (customerID es opcional y "
+            "Churn se ignora). Se calcula la probabilidad, el nivel de riesgo, los factores SHAP y las "
+            "recomendaciones de cada cliente.", chips=["CSV", "Hasta 20 000 filas", "Descarga de resultados"])
 
 raw_example = pd.read_csv(DATA / "WA_Fn-UseC_-Telco-Customer-Churn.csv")
 plantilla = raw_example.drop(columns=["Churn"]).sample(25, random_state=7)
@@ -71,3 +68,5 @@ st.dataframe(
                    "NivelRiesgo": "Nivel de riesgo", "FactoresRiesgo": "Factores de riesgo (SHAP)"})
 st.download_button("⬇️ Descargar resultados (CSV)", salida.to_csv(index=False).encode("utf-8"),
                    "predicciones_churn.csv", "text/csv", type="primary")
+
+footer()

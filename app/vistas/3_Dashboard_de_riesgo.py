@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # carpeta app/ (utils.py)
-from utils import (C_NO, PLOTLY_LAYOUT, PRIORITY_COLORS, RISK_COLORS,  # noqa: E402
+from utils import (footer, page_header, section, C_NO, PLOTLY_LAYOUT, PRIORITY_COLORS, RISK_COLORS,  # noqa: E402
                    load_models, load_scored, sidebar_info)
 
 meta, _, _ = load_models()
@@ -18,7 +18,10 @@ sidebar_info(meta)
 THR, HIGH = meta["umbral_decision"], meta["umbral_riesgo_alto"]
 NIVELES = ["Bajo", "Medio", "Alto"]
 
-st.title("📊 Dashboard de clientes en riesgo")
+page_header("📊", "Dashboard de clientes en riesgo",
+            "Visión de toda la cartera: quién está en riesgo, cuánto ingreso está en juego y por qué. "
+            "Usa los filtros para enfocar la campaña de retención y descarga la lista de clientes.",
+            chips=[f"Umbral de decisión {THR:.0%}", f"Riesgo alto ≥ {HIGH:.0%}", "Matriz riesgo × valor"])
 
 # -----------------------------------------------------
 # Filtros (una sola fila)
@@ -101,7 +104,7 @@ with g4:
     st.plotly_chart(fig, width="stretch")
 
 # Resumen de prioridades
-st.subheader("Plan de acción por prioridad")
+section("Plan de acción por prioridad")
 pr = (df.groupby("Prioridad").agg(Clientes=("customerID", "size"), ProbMedia=("ProbChurn", "mean"),
                                   ValorAnual=("ValorAnual", "sum"), PerdidaEsperada=("PerdidaEsperada", "sum"))
       .reindex(list(PRIORITY_COLORS)).dropna())
@@ -119,7 +122,7 @@ st.dataframe(pr, width="stretch", column_config={
 # -----------------------------------------------------
 # Lista de clientes en riesgo
 # -----------------------------------------------------
-st.subheader("Clientes en riesgo (ordenados por pérdida esperada)")
+section("Clientes en riesgo (ordenados por pérdida esperada)")
 n = st.slider("Número de clientes a mostrar", 10, 500, 50, step=10)
 cols = ["customerID", "ProbChurn", "NivelRiesgo", "Prioridad", "ValorAnual", "PerdidaEsperada", "Contract",
         "tenure", "MonthlyCharges", "InternetService", "PaymentMethod", "SegmentoRFM", "FactoresRiesgo", "Recomendaciones"]
@@ -138,3 +141,5 @@ st.download_button(f"⬇️ Descargar lista de campaña ({len(lista):,} clientes
 st.caption("Las probabilidades de la cartera completa se calcularon con el modelo en producción. "
            "Para los clientes del conjunto de entrenamiento son estimaciones dentro de la muestra; "
            "el desempeño honesto del modelo se reporta en la página «Desempeño de modelos» (conjunto de prueba).")
+
+footer()
