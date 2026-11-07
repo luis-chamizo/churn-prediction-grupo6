@@ -19,7 +19,7 @@ sidebar_info(meta)
 nombres = list(meta["archivos_modelos"].keys())
 color = {n: MODEL_COLORS[i] for i, n in enumerate(nombres)}
 
-page_header("🧪", "Desempeño y comparación de modelos",
+page_header("analytics", "Desempeño y comparación de modelos",
             f"5 modelos requeridos + 1 ensamble Stacking, ajustados con búsqueda aleatoria y validación cruzada "
             f"estratificada de 5 pliegues. Entrenamiento: {meta['n_train']:,} clientes · prueba: {meta['n_test']:,} clientes.",
             chips=[f"En producción: {meta['modelo_final']}", "Accuracy · F1 · ROC-AUC", "SHAP"])
@@ -27,7 +27,7 @@ page_header("🧪", "Desempeño y comparación de modelos",
 # -----------------------------------------------------
 # Tabla de métricas
 # -----------------------------------------------------
-section("Métricas en el conjunto de prueba (umbral óptimo por modelo)")
+section("Métricas en el conjunto de prueba (umbral óptimo por modelo)", "table_chart")
 met = pd.DataFrame(meta["metricas_test"]).T
 met.insert(0, "Umbral", pd.Series(meta["umbrales_por_modelo"]))
 met = met[["Umbral", "Accuracy", "Precision", "Recall", "F1", "ROC-AUC", "PR-AUC", "Brier", "roc_auc_cv"]]
@@ -68,7 +68,7 @@ with c2:
 # -----------------------------------------------------
 c1, c2 = st.columns([1, 1.3])
 with c1:
-    section("Matriz de confusión")
+    section("Matriz de confusión", "grid_view")
     mats = json.load(open(REPORTS / "matrices_confusion.json"))
     sel = st.selectbox("Modelo", nombres, index=nombres.index(meta["modelo_final"]))
     cm = mats[sel]
@@ -83,7 +83,7 @@ with c1:
     st.caption(f"Detecta {tp} de {tp + fn} clientes que abandonan (Recall {tp / (tp + fn):.1%}). "
                f"{fp} falsas alarmas sobre {tn + fp} clientes que se quedan.")
 with c2:
-    section("Importancia global (SHAP)")
+    section("Importancia global (SHAP)", "psychology")
     imp = pd.read_csv(REPORTS / "shap_importancia_global.csv", index_col=0).head(15).iloc[::-1]
     fig = go.Figure(go.Bar(x=imp["mean_abs_shap"], y=imp.index, orientation="h", marker_color=C_NO,
                            hovertemplate="%{y}: %{x:.3f}<extra></extra>"))
@@ -91,7 +91,7 @@ with c2:
                       title=f"Modelo {meta['modelo_final']} · 15 variables más influyentes")
     st.plotly_chart(fig, width="stretch")
 
-section("Visualizaciones de explicabilidad y negocio")
+section("Visualizaciones de explicabilidad y negocio", "insights")
 t1, t2, t3, t4 = st.tabs(["SHAP beeswarm", "Dependencia SHAP", "Curva de ganancia", "Costo-beneficio"])
 for tab, f in zip([t1, t2, t3, t4], ["13_shap_beeswarm", "15_shap_dependencia", "11_curva_ganancia", "12_costo_beneficio"]):
     with tab:

@@ -26,7 +26,7 @@ DATA = ROOT / "data"
 C_NO, C_SI = "#2a78d6", "#eb6834"
 MODEL_COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300"]
 RISK_COLORS = {"Bajo": "#0ca30c", "Medio": "#fab219", "Alto": "#d03b3b"}
-RISK_ICONS = {"Bajo": "🟢", "Medio": "🟡", "Alto": "🔴"}
+RISK_ICONS = {"Bajo": "verified", "Medio": "warning", "Alto": "error"}  # Material Symbols
 PRIORITY_COLORS = {
     "1. Retener ya (alto riesgo, alto valor)": "#d03b3b",
     "2. Retención de bajo costo (alto riesgo, bajo valor)": "#ec835a",
@@ -147,7 +147,8 @@ def risk_badge(level: str) -> str:
     """Insignia HTML de nivel de riesgo (icono + texto, nunca solo color)."""
     fg = "#0b0b0b" if level == "Medio" else "#ffffff"
     return (f"<span style='background:{RISK_COLORS[level]};color:{fg};padding:6px 14px;border-radius:999px;"
-            f"font-weight:600;font-size:1.05rem'>{RISK_ICONS[level]} Riesgo {level}</span>")
+            f"font-weight:600;font-size:1.05rem;display:inline-flex;align-items:center;gap:.35rem'>"
+            f"{icon(RISK_ICONS[level], 'sm')} Riesgo {level}</span>")
 
 
 # =====================================================
@@ -161,16 +162,23 @@ def apply_style():
     st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
 
-def page_header(icon: str, title: str, subtitle: str, chips=None):
-    """Encabezado tipo 'hero' con título, descripción y etiquetas."""
+def icon(name: str, cls: str = "") -> str:
+    """Ícono de Material Symbols Rounded (Google) para usar dentro de HTML."""
+    return f"<span class='mi {cls}'>{name}</span>"
+
+
+def page_header(icono: str, title: str, subtitle: str, chips=None):
+    """Encabezado tipo 'hero' con ícono, título, descripción y etiquetas."""
     chips_html = ("<div class='chips'>" + "".join(f"<span class='chip'>{c}</span>" for c in chips) + "</div>"
                   if chips else "")
-    st.markdown(f"<div class='hero'><h1>{icon} {title}</h1><p>{subtitle}</p>{chips_html}</div>",
+    st.markdown(f"<div class='hero'><div class='hero-row'><div class='hero-ico'>{icon(icono)}</div>"
+                f"<h1>{title}</h1></div><p>{subtitle}</p>{chips_html}</div>",
                 unsafe_allow_html=True)
 
 
-def section(title: str):
-    st.markdown(f"<div class='section-title'><div class='bar'></div><span>{title}</span></div>",
+def section(title: str, icono: str | None = None):
+    ico = icon(icono, "sec") if icono else "<div class='bar'></div>"
+    st.markdown(f"<div class='section-title'>{ico}<span>{title}</span></div>",
                 unsafe_allow_html=True)
 
 

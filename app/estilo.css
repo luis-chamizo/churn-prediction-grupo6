@@ -1,4 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,300..600,0..1,0&display=block');
+
+/* ---------- Íconos (Material Symbols Rounded, Google) ---------- */
+.mi { font-family: 'Material Symbols Rounded' !important; font-weight: normal; font-style: normal;
+  font-size: 24px; line-height: 1; display: inline-block; vertical-align: middle; letter-spacing: normal;
+  text-transform: none; white-space: nowrap; direction: ltr; -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+.mi.sm { font-size: 20px; }
+.mi.xs { font-size: 16px; vertical-align: -3px; }
+.mi.sec { font-size: 22px; color: #2a78d6; background: #eaf2fd; border-radius: 8px; padding: 4px; }
 
 html, body, [class*="css"], .stMarkdown, .stText, button, input, textarea, select, label {
   font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif !important;
@@ -89,3 +99,17 @@ h2, h3 { font-weight: 700 !important; }
   .steps { grid-template-columns: repeat(2, 1fr); }
   .hero h1 { font-size: 1.5rem; }
 }
+
+/* ---------- Íconos en componentes (al final para prevalecer) ---------- */
+.hero-row { display: flex; align-items: center; gap: .85rem; margin-bottom: .35rem; }
+.hero-row h1 { margin: 0 !important; }
+.hero-ico { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; flex-shrink: 0;
+  background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .25); }
+.hero-ico .mi { font-size: 30px; color: #ffffff; font-family: 'Material Symbols Rounded' !important; }
+.feature .ico { color: #2a78d6; }
+.feature .ico .mi { font-size: 26px; font-family: 'Material Symbols Rounded' !important; }
+.form-sec { display: flex; align-items: center; gap: .4rem; }
+.form-sec .mi { color: #2a78d6; font-family: 'Material Symbols Rounded' !important; }
+.rec .m .mi { color: #6b7a90; font-family: 'Material Symbols Rounded' !important; }
+.section-title .mi { font-family: 'Material Symbols Rounded' !important; }
+span.mi { font-family: 'Material Symbols Rounded' !important; }

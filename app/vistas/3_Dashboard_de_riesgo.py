@@ -18,7 +18,7 @@ sidebar_info(meta)
 THR, HIGH = meta["umbral_decision"], meta["umbral_riesgo_alto"]
 NIVELES = ["Bajo", "Medio", "Alto"]
 
-page_header("📊", "Dashboard de clientes en riesgo",
+page_header("monitoring", "Dashboard de clientes en riesgo",
             "Visión de toda la cartera: quién está en riesgo, cuánto ingreso está en juego y por qué. "
             "Usa los filtros para enfocar la campaña de retención y descarga la lista de clientes.",
             chips=[f"Umbral de decisión {THR:.0%}", f"Riesgo alto ≥ {HIGH:.0%}", "Matriz riesgo × valor"])
@@ -51,8 +51,8 @@ if df.empty:
 alto = df[df.NivelRiesgo == "Alto"]
 k1, k2, k3, k4, k5 = st.columns(5)
 k1.metric("Clientes", f"{len(df):,}")
-k2.metric("🔴 Riesgo alto", f"{len(alto):,}", help=f"{len(alto) / len(df):.1%} de los clientes filtrados")
-k3.metric("🟡 Riesgo medio", f"{(df.NivelRiesgo == 'Medio').sum():,}")
+k2.metric(":material/error: Riesgo alto", f"{len(alto):,}", help=f"{len(alto) / len(df):.1%} de los clientes filtrados")
+k3.metric(":material/warning: Riesgo medio", f"{(df.NivelRiesgo == 'Medio').sum():,}")
 k4.metric("Prob. media de churn", f"{df.ProbChurn.mean():.1%}")
 k5.metric("Ingreso anual en riesgo", f"USD {df.PerdidaEsperada.sum() / 1000:,.0f}k",
           help="Suma de probabilidad × valor anual (12 × cargo mensual)")
@@ -104,7 +104,7 @@ with g4:
     st.plotly_chart(fig, width="stretch")
 
 # Resumen de prioridades
-section("Plan de acción por prioridad")
+section("Plan de acción por prioridad", "flag")
 pr = (df.groupby("Prioridad").agg(Clientes=("customerID", "size"), ProbMedia=("ProbChurn", "mean"),
                                   ValorAnual=("ValorAnual", "sum"), PerdidaEsperada=("PerdidaEsperada", "sum"))
       .reindex(list(PRIORITY_COLORS)).dropna())
@@ -122,7 +122,7 @@ st.dataframe(pr, width="stretch", column_config={
 # -----------------------------------------------------
 # Lista de clientes en riesgo
 # -----------------------------------------------------
-section("Clientes en riesgo (ordenados por pérdida esperada)")
+section("Clientes en riesgo (ordenados por pérdida esperada)", "group")
 n = st.slider("Número de clientes a mostrar", 10, 500, 50, step=10)
 cols = ["customerID", "ProbChurn", "NivelRiesgo", "Prioridad", "ValorAnual", "PerdidaEsperada", "Contract",
         "tenure", "MonthlyCharges", "InternetService", "PaymentMethod", "SegmentoRFM", "FactoresRiesgo", "Recomendaciones"]
@@ -136,8 +136,8 @@ st.dataframe(lista.head(n), hide_index=True, width="stretch", height=420, column
     "InternetService": "Internet", "PaymentMethod": "Método de pago", "SegmentoRFM": "Segmento RFM",
     "FactoresRiesgo": "Factores de riesgo (SHAP)",
     "MonthlyCharges": st.column_config.NumberColumn("Cargo mensual", format="dollar")})
-st.download_button(f"⬇️ Descargar lista de campaña ({len(lista):,} clientes en riesgo medio/alto)",
-                   lista.to_csv(index=False).encode("utf-8"), "campana_retencion.csv", "text/csv", type="primary")
+st.download_button(f"Descargar lista de campaña ({len(lista):,} clientes en riesgo medio/alto)",
+                   lista.to_csv(index=False).encode("utf-8"), "campana_retencion.csv", "text/csv", type="primary", icon=":material/download:")
 st.caption("Las probabilidades de la cartera completa se calcularon con el modelo en producción. "
            "Para los clientes del conjunto de entrenamiento son estimaciones dentro de la muestra; "
            "el desempeño honesto del modelo se reporta en la página «Desempeño de modelos» (conjunto de prueba).")

@@ -14,15 +14,15 @@ from utils import (footer, page_header, section, DATA, PLOTLY_LAYOUT, RAW_FEATUR
 meta, final, _ = load_models()
 sidebar_info(meta)
 
-page_header("📂", "Predicción por lotes",
+page_header("upload_file", "Predicción por lotes",
             "Sube un archivo CSV con las columnas del dataset <i>Telco Customer Churn</i> (customerID es opcional y "
             "Churn se ignora). Se calcula la probabilidad, el nivel de riesgo, los factores SHAP y las "
             "recomendaciones de cada cliente.", chips=["CSV", "Hasta 20 000 filas", "Descarga de resultados"])
 
 raw_example = pd.read_csv(DATA / "WA_Fn-UseC_-Telco-Customer-Churn.csv")
 plantilla = raw_example.drop(columns=["Churn"]).sample(25, random_state=7)
-st.download_button("⬇️ Descargar plantilla de ejemplo (25 clientes)",
-                   plantilla.to_csv(index=False).encode("utf-8"), "plantilla_clientes.csv", "text/csv")
+st.download_button("Descargar plantilla de ejemplo (25 clientes)",
+                   plantilla.to_csv(index=False).encode("utf-8"), "plantilla_clientes.csv", "text/csv", icon=":material/download:")
 
 archivo = st.file_uploader("Archivo CSV", type="csv")
 usar_ejemplo = st.checkbox("Usar la plantilla de ejemplo en lugar de subir un archivo")
@@ -66,7 +66,7 @@ st.dataframe(
                    "ValorAnual": st.column_config.NumberColumn("Valor anual", format="dollar"),
                    "PerdidaEsperada": st.column_config.NumberColumn("Pérdida esperada", format="dollar"),
                    "NivelRiesgo": "Nivel de riesgo", "FactoresRiesgo": "Factores de riesgo (SHAP)"})
-st.download_button("⬇️ Descargar resultados (CSV)", salida.to_csv(index=False).encode("utf-8"),
-                   "predicciones_churn.csv", "text/csv", type="primary")
+st.download_button("Descargar resultados (CSV)", salida.to_csv(index=False).encode("utf-8"),
+                   "predicciones_churn.csv", "text/csv", type="primary", icon=":material/download:")
 
 footer()
