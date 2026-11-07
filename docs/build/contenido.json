@@ -648,13 +648,13 @@
     "**Predicción por lotes:** carga de un CSV, validación de columnas y descarga de los resultados.",
     "**Dashboard de riesgo:** KPIs, filtros, distribución del riesgo, matriz riesgo × valor, factores SHAP frecuentes y lista descargable de clientes para campañas.",
     "**Desempeño de modelos:** comparación interactiva de métricas, curvas ROC, matrices de confusión e importancia SHAP.",
-    "**Inicio:** resumen del proyecto y de la metodología CRISP-DM."
+    "**Inicio (panel ejecutivo):** estado real del modelo, KPI con minigráficas, distribución del riesgo, comportamiento del abandono por antigüedad, factores SHAP, clientes prioritarios y la recomendación agregada para la campaña."
    ]
   },
   {
    "type": "widefig",
    "src": "../capturas/dashboard.png",
-   "caption": "Dashboard de clientes en riesgo de la aplicación web: KPIs, distribución de la probabilidad y matriz riesgo × valor para priorizar la retención.",
+   "caption": "Panel principal de la aplicación web: KPI con minigráficas construidas con datos reales, distribución de clientes activos por nivel de riesgo y comportamiento del abandono según la antigüedad.",
    "scale": 0.85
   },
   {

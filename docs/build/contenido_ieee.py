@@ -368,10 +368,11 @@ bul(["**Predicción individual:** formulario (o selección de un cliente existen
      "**Dashboard de riesgo:** KPIs, filtros, distribución del riesgo, matriz riesgo × valor, factores SHAP frecuentes y lista "
      "descargable de clientes para campañas.",
      "**Desempeño de modelos:** comparación interactiva de métricas, curvas ROC, matrices de confusión e importancia SHAP.",
-     "**Inicio:** resumen del proyecto y de la metodología CRISP-DM."])
+     "**Inicio (panel ejecutivo):** estado real del modelo, KPI con minigráficas, distribución del riesgo, comportamiento "
+     "del abandono por antigüedad, factores SHAP, clientes prioritarios y la recomendación agregada para la campaña."])
 if (shots / "dashboard.png").exists():
-    fig_("../capturas/dashboard.png", "Dashboard de clientes en riesgo de la aplicación web: KPIs, distribución de la "
-         "probabilidad y matriz riesgo × valor para priorizar la retención.", wide=True, scale=0.85)
+    fig_("../capturas/dashboard.png", "Panel principal de la aplicación web: KPI con minigráficas construidas con datos reales, "
+         "distribución de clientes activos por nivel de riesgo y comportamiento del abandono según la antigüedad.", wide=True, scale=0.85)
 h2("Motor de recomendaciones de retención")
 p("Cada factor de riesgo accionable se asocia con una regla de negocio. Por ejemplo: contrato mes a mes → migración a contrato "
   "anual con descuento; antigüedad ≤ 12 meses → programa de bienvenida; sin seguridad en línea o soporte → prueba gratuita del "

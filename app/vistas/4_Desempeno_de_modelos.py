@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # carpeta app/ (utils.py)
-from utils import (page_header, section, C_NO, FEATURE_LABELS, FIGURES, MODEL_COLORS, PLOTLY_LAYOUT,  # noqa: E402
+from utils import (page_header, section, C_NO, FIGURES, MODEL_COLORS, PLOTLY_LAYOUT,  # noqa: E402
                    REPORTS, load_models, sidebar_info)
 
 meta, _, _ = load_models()

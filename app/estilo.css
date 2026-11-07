@@ -93,8 +93,6 @@ h2, h3 { font-weight: 700 !important; }
   font-size: .72rem; font-weight: 600; margin-left: .35rem; }
 .result-card { background: #fff; border: 1px solid #e4e8f0; border-radius: 18px; padding: 1.2rem 1.4rem;
   box-shadow: 0 1px 3px rgba(16, 24, 40, .05); }
-.app-foot { text-align: center; color: #8a97aa; font-size: .78rem; margin-top: 2.5rem; padding-top: 1rem;
-  border-top: 1px solid #e4e8f0; line-height: 1.6; }
 @media (max-width: 900px) {
   .steps { grid-template-columns: repeat(2, 1fr); }
   .hero h1 { font-size: 1.5rem; }

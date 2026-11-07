@@ -182,12 +182,6 @@ def section(title: str, icono: str | None = None):
                 unsafe_allow_html=True)
 
 
-def footer():
-    st.markdown("<div class='app-foot'>Churn Prediction Inteligente · Grupo 6 · Luis Mario Chamizo Tiafi y "
-                "Juan Diego Chamizo Tiafi<br>Fundación Universitaria de Popayán · Especialización en Data Analytics "
-                "para Marketing Digital · Minería de Datos · 2026</div>", unsafe_allow_html=True)
-
-
 @st.cache_data(ttl=600, show_spinner=False)
 def model_health() -> bool:
     """Verificación real del estado del modelo: carga el pipeline y puntúa un cliente de la cartera."""
