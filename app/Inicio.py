@@ -7,9 +7,14 @@ import streamlit as st
 
 from pathlib import Path
 
+from estilo import apply_style  # módulo liviano: no espera a sklearn/xgboost
+
 st.set_page_config(page_title="Churn Prediction Inteligente", page_icon=":material/insights:", layout="wide")
 APP = Path(__file__).resolve().parent
 st.logo(str(APP / "logo.svg"), size="large", icon_image=str(APP / "logo_icono.svg"))
+# El CSS se inyecta aquí, antes de ejecutar cualquier página: así está presente desde
+# el primer instante y no desaparece al navegar mientras la página nueva carga.
+apply_style()
 
 paginas = [
     st.Page("vistas/0_Inicio.py", title="Inicio", icon=":material/space_dashboard:", default=True),

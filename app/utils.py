@@ -33,11 +33,11 @@ PRIORITY_COLORS = {
     "3. Fidelizar (bajo riesgo, alto valor)": "#2a78d6",
     "4. Mantener (bajo riesgo, bajo valor)": "#898781",
 }
+# Sin colores de texto ni plantilla fijos: el tema de Streamlit (claro/oscuro) los aporta.
 PLOTLY_LAYOUT = dict(
-    template="plotly_white",
-    font=dict(family="Inter, system-ui, -apple-system, Segoe UI, sans-serif", size=13, color="#52514e"),
-    title_font=dict(size=15, color="#0f2742"),
-    paper_bgcolor="#ffffff", plot_bgcolor="#ffffff",
+    font=dict(family="Inter, system-ui, -apple-system, Segoe UI, sans-serif", size=13),
+    title_font=dict(size=15),
+    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
     margin=dict(l=12, r=12, t=48, b=12),
     hoverlabel=dict(font_size=12, font_family="Inter, sans-serif"),
 )
@@ -157,9 +157,7 @@ def risk_badge(level: str) -> str:
 APP_DIR = Path(__file__).resolve().parent
 
 
-def apply_style():
-    css = (APP_DIR / "estilo.css").read_text(encoding="utf-8")
-    st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
+from estilo import THEME_WATCHER, apply_style  # noqa: E402,F401
 
 
 def icon(name: str, cls: str = "") -> str:
@@ -223,8 +221,8 @@ def sparkline_svg(values, color: str, title: str, w: int = 130, h: int = 42) -> 
 
 
 def sidebar_info(meta):
-    apply_style()
-    m = meta["metricas_test"][meta["modelo_final"]]
+    # El estilo se aplica una sola vez en el punto de entrada (Inicio.py)
+    m =meta["metricas_test"][meta["modelo_final"]]
     ok = model_health()
     estado = ("<i></i> En producción" if ok else
               "<i style='background:#E84B55;box-shadow:0 0 0 3px rgba(232,75,85,.25)'></i> No disponible")

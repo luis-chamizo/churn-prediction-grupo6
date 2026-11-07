@@ -368,3 +368,74 @@ span.mi { font-family: 'Material Symbols Rounded' !important; }
   [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stSidebarNav"] li { display: flex; justify-content: center; }
 }
 @media (min-width: 641px) { [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stHeader"] { z-index: 1000200 !important; } }
+
+/* =====================================================================
+   v6: MODO OSCURO
+   Streamlit aplica su tema (System / Light / Dark, menú ⋮) a sus propios
+   componentes; utils.THEME_WATCHER marca <html data-st-theme="dark"> y aquí
+   se adaptan los componentes propios. El encabezado azul y la barra
+   lateral ya son oscuros y se mantienen igual en ambos temas.
+   ===================================================================== */
+html[data-st-theme="dark"] {
+  --pg: #0b1626; --card: #13223a; --card2: #172a45; --bd: #24395a; --ink: #e6edf6; --ink2: #c3d1e3; --mut: #91a4bf;
+  --soft: rgba(75,155,240,.16); --track: #22385a;
+}
+html[data-st-theme="dark"] [data-testid="stAppViewContainer"],
+html[data-st-theme="dark"] [data-testid="stHeader"],
+html[data-st-theme="dark"] [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stHeader"] { background: var(--pg) !important; }
+html[data-st-theme="dark"] h1, html[data-st-theme="dark"] h2, html[data-st-theme="dark"] h3, html[data-st-theme="dark"] h4 { color: var(--ink); }
+
+/* tarjetas y contenedores */
+html[data-st-theme="dark"] [data-testid="stMetric"],
+html[data-st-theme="dark"] [data-testid="stPlotlyChart"], html[data-st-theme="dark"] [data-testid="stImage"],
+html[data-st-theme="dark"] [data-testid="stForm"], html[data-st-theme="dark"] [data-testid="stExpander"],
+html[data-st-theme="dark"] [data-testid="stFileUploaderDropzone"], html[data-st-theme="dark"] .stTabs [data-baseweb="tab"],
+html[data-st-theme="dark"] .feature, html[data-st-theme="dark"] .step, html[data-st-theme="dark"] .rec,
+html[data-st-theme="dark"] .result-card, html[data-st-theme="dark"] [class*="st-key-panel"] {
+  background: var(--card) !important; border-color: var(--bd) !important; box-shadow: 0 1px 3px rgba(0,0,0,.35) !important; }
+html[data-st-theme="dark"] [class*="st-key-panel"] [data-testid="stPlotlyChart"] { background: transparent !important; }
+html[data-st-theme="dark"] .rec { border-left-color: #4b9bf0 !important; }
+html[data-st-theme="dark"] [data-testid="stMetricLabel"] p { color: var(--mut) !important; }
+html[data-st-theme="dark"] [data-testid="stMetricValue"] { color: var(--ink); }
+html[data-st-theme="dark"] [data-testid="stPageLink"] a { background: var(--soft); }
+html[data-st-theme="dark"] [data-testid="stPageLink"] a span { color: #9cc8fa !important; }
+
+/* textos de componentes propios */
+html[data-st-theme="dark"] .section-title span, html[data-st-theme="dark"] .form-sec, html[data-st-theme="dark"] .step b,
+html[data-st-theme="dark"] .rec .t, html[data-st-theme="dark"] .ph, html[data-st-theme="dark"] .kpi .vv,
+html[data-st-theme="dark"] .lg .r b, html[data-st-theme="dark"] .shp .r b, html[data-st-theme="dark"] .reco p,
+html[data-st-theme="dark"] .tb-user { color: var(--ink) !important; }
+html[data-st-theme="dark"] .kpi .t, html[data-st-theme="dark"] .lg .r, html[data-st-theme="dark"] .shp .r,
+html[data-st-theme="dark"] .reco li, html[data-st-theme="dark"] .rec .d { color: var(--ink2) !important; }
+html[data-st-theme="dark"] .feature p, html[data-st-theme="dark"] .step p, html[data-st-theme="dark"] .rec .m,
+html[data-st-theme="dark"] .rec .m .mi, html[data-st-theme="dark"] .lg .r small, html[data-st-theme="dark"] .shp-note,
+html[data-st-theme="dark"] .reco li small, html[data-st-theme="dark"] .reco-note { color: var(--mut) !important; }
+html[data-st-theme="dark"] .mi.sec, html[data-st-theme="dark"] .feature .ico { background: var(--soft); color: #6fb0f5; }
+html[data-st-theme="dark"] .form-sec .mi { color: #6fb0f5; }
+html[data-st-theme="dark"] .rec .pill { background: rgba(235,104,52,.18); color: #f7a37f; }
+html[data-st-theme="dark"] .tb-ico, html[data-st-theme="dark"] .tb-ico .mi { color: var(--ink2) !important; }
+html[data-st-theme="dark"] .tb-ico .badge { border-color: var(--pg); }
+
+/* KPI del inicio */
+html[data-st-theme="dark"] .kpi { border-color: var(--bd); box-shadow: 0 2px 8px rgba(0,0,0,.35); }
+html[data-st-theme="dark"] .kpi.blue   { background: linear-gradient(180deg, var(--card), #142a49); } html[data-st-theme="dark"] .kpi.blue .ic   { background: rgba(39,132,232,.20); }
+html[data-st-theme="dark"] .kpi.green  { background: linear-gradient(180deg, var(--card), #12302c); } html[data-st-theme="dark"] .kpi.green .ic  { background: rgba(22,185,120,.20); }
+html[data-st-theme="dark"] .kpi.red    { background: linear-gradient(180deg, var(--card), #2f1c27); } html[data-st-theme="dark"] .kpi.red .ic    { background: rgba(232,75,85,.20); }
+html[data-st-theme="dark"] .kpi.violet { background: linear-gradient(180deg, var(--card), #251d42); } html[data-st-theme="dark"] .kpi.violet .ic { background: rgba(133,45,222,.24); }
+html[data-st-theme="dark"] .dl.up      { background: rgba(22,185,120,.18); color: #5fe0aa; }
+html[data-st-theme="dark"] .dl.neutral { background: rgba(39,132,232,.20); color: #8cc4ff; }
+html[data-st-theme="dark"] .dl.warn    { background: rgba(232,75,85,.20);  color: #ff9aa1; }
+html[data-st-theme="dark"] .dl.vio     { background: rgba(133,45,222,.24); color: #c9a3f7; }
+
+/* paneles del inicio */
+html[data-st-theme="dark"] .shp .tr { background: var(--track); }
+html[data-st-theme="dark"] [class*="st-key-panel_reco"] { background: linear-gradient(180deg, #11302a, #0f2a25) !important; border-color: #1d4a3d !important; }
+html[data-st-theme="dark"] .reco .tg { background: rgba(22,185,120,.12); border-color: #1d4a3d; }
+
+/* gráficos Plotly: separadores del anillo y puntos con el color del fondo de tarjeta */
+html[data-st-theme="dark"] [data-testid="stPlotlyChart"] .pielayer path.surface { stroke: var(--card) !important; }
+html[data-st-theme="dark"] [class*="st-key-panel_comportamiento"] .scatterlayer path.point { fill: var(--card) !important; }
+
+/* el bloque invisible del detector de tema no debe ocupar espacio */
+[data-testid="stElementContainer"]:has(> [data-testid="stHtml"] > script:only-child),
+.element-container:has(> .stHtml > script:only-child) { display: none !important; }

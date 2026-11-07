@@ -1,10 +1,32 @@
+# Temas claro y oscuro: el usuario elige "System", "Light" o "Dark" en el menú ⋮.
+# Streamlit guarda esa elección en el navegador de cada usuario.
+# Los colores replican los de app/estilo.css para que la app se vea igual desde el
+# primer instante de carga (antes de que se inyecte el CSS propio).
 [theme]
-base = "light"
 primaryColor = "#2a78d6"
-backgroundColor = "#fcfcfb"
-secondaryBackgroundColor = "#f3f2ee"
-textColor = "#0b0b0b"
-font = "sans serif"
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap, sans-serif"
+
+[theme.light]
+primaryColor = "#2a78d6"
+backgroundColor = "#F1F6FC"
+secondaryBackgroundColor = "#e9eff7"
+textColor = "#0f2742"
+
+[theme.light.sidebar]
+backgroundColor = "#06264A"
+secondaryBackgroundColor = "#0b3a6e"
+textColor = "#e7eef8"
+
+[theme.dark]
+primaryColor = "#4b9bf0"
+backgroundColor = "#0b1626"
+secondaryBackgroundColor = "#15243a"
+textColor = "#e6edf6"
+
+[theme.dark.sidebar]
+backgroundColor = "#06264A"
+secondaryBackgroundColor = "#0b3a6e"
+textColor = "#e7eef8"
 
 [server]
 headless = true

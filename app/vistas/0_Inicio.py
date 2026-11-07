@@ -107,8 +107,8 @@ with g1:
                 direction="clockwise", marker=dict(colors=[RISK_COLORS[k] for k in cnt.index], line=dict(color="#fff", width=3)),
                 textinfo="none", hovertemplate="%{label}: %{value:,} clientes (%{percent})<extra></extra>"))
             fig.update_layout(**{**PLOTLY_LAYOUT, "margin": dict(l=0, r=0, t=0, b=0)}, height=215, showlegend=False,
-                              annotations=[dict(text=f"<b style='font-size:26px;color:#102A43'>{miles(cnt.sum())}</b>"
-                                                     f"<br><span style='font-size:13px;color:#52647a'>Clientes</span>",
+                              annotations=[dict(text=f"<b style='font-size:26px'>{miles(cnt.sum())}</b>"
+                                                     f"<br><span style='font-size:13px'>Clientes</span>",
                                                 showarrow=False, x=0.5, y=0.5)])
             st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
         with c_b:
@@ -144,7 +144,7 @@ with g2:
                                      hovertemplate=f"{nombre}: %{{y:,}}<extra>%{{x}}</extra>"))
         fig.update_layout(**{**PLOTLY_LAYOUT, "margin": dict(l=6, r=6, t=28, b=6)}, height=245, hovermode="x unified",
                           legend=dict(orientation="h", x=1, xanchor="right", y=1.14, font=dict(size=12)),
-                          yaxis=dict(gridcolor="#edf2f8", zeroline=False),
+                          yaxis=dict(gridcolor="rgba(128,145,170,.18)", zeroline=False),
                           xaxis=dict(showgrid=False, tickangle=0, tickfont=dict(size=11)))
         st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
 
@@ -173,9 +173,10 @@ with p2:
                  .rename(columns={"customerID": "ID Cliente", "NivelRiesgo": "Riesgo", "ProbChurn": "Prob. abandono"}))
         if buscar:
             tabla = tabla[tabla["ID Cliente"].str.contains(buscar.strip(), case=False, na=False)]
-        estilos = {"Alto": "background-color:#fde3e5;color:#c0303a;font-weight:600",
-                   "Medio": "background-color:#fdf1d3;color:#9a6a00;font-weight:600",
-                   "Bajo": "background-color:#dcf6ea;color:#0e8a57;font-weight:600"}
+        # Fondos semitransparentes: se leen bien en tema claro y oscuro
+        estilos = {"Alto": "background-color:rgba(232,75,85,.18);color:#d63a45;font-weight:600",
+                   "Medio": "background-color:rgba(245,181,27,.20);color:#b47d00;font-weight:600",
+                   "Bajo": "background-color:rgba(22,185,120,.18);color:#119a64;font-weight:600"}
         st.dataframe(tabla.head(200).style.map(lambda v: estilos.get(v, ""), subset=["Riesgo"])
                      .format({"Prob. abandono": "{:.2f}"}),
                      hide_index=True, width="stretch", height=230)
