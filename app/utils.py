@@ -25,7 +25,7 @@ DATA = ROOT / "data"
 # Paleta (validada para daltonismo) – misma que el notebook
 C_NO, C_SI = "#2a78d6", "#eb6834"
 MODEL_COLORS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300"]
-RISK_COLORS = {"Bajo": "#0ca30c", "Medio": "#fab219", "Alto": "#d03b3b"}
+RISK_COLORS = {"Bajo": "#16B978", "Medio": "#F5B51B", "Alto": "#E84B55"}
 RISK_ICONS = {"Bajo": "verified", "Medio": "warning", "Alto": "error"}  # Material Symbols
 PRIORITY_COLORS = {
     "1. Retener ya (alto riesgo, alto valor)": "#d03b3b",
@@ -188,17 +188,65 @@ def footer():
                 "para Marketing Digital · Minería de Datos · 2026</div>", unsafe_allow_html=True)
 
 
+@st.cache_data(ttl=600, show_spinner=False)
+def model_health() -> bool:
+    """Verificación real del estado del modelo: carga el pipeline y puntúa un cliente de la cartera."""
+    try:
+        _, final, _ = load_models()
+        muestra = load_scored().head(1)[RAW_FEATURES]
+        p = float(final.predict_proba(muestra)[0, 1])
+        return 0.0 <= p <= 1.0
+    except Exception:
+        return False
+
+
+def fecha_es(txt: str) -> str:
+    """'2026-11-07 12:52' -> '07 nov 2026, 12:52'."""
+    meses = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"]
+    try:
+        d = pd.Timestamp(txt)
+        return f"{d.day:02d} {meses[d.month - 1]} {d.year}, {d:%H:%M}"
+    except Exception:
+        return str(txt)
+
+
+def sparkline_svg(values, color: str, title: str, w: int = 130, h: int = 42) -> str:
+    """Minigráfica SVG (línea + área) dibujada a partir de una serie real de datos."""
+    v = np.asarray(values, dtype=float)
+    if v.size < 2 or np.nanmax(v) == np.nanmin(v):
+        v = np.array([0.0, 1.0])
+    x = np.linspace(2, w - 2, v.size)
+    y = h - 3 - (v - v.min()) / (v.max() - v.min()) * (h - 8)
+    pts = " ".join(f"{a:.1f},{b:.1f}" for a, b in zip(x, y))
+    gid = "g" + color.strip("#") + str(abs(hash(title)) % 10000)
+    return (f"<svg width='{w}' height='{h}' viewBox='0 0 {w} {h}'><title>{title}</title>"
+            f"<defs><linearGradient id='{gid}' x1='0' y1='0' x2='0' y2='1'>"
+            f"<stop offset='0' stop-color='{color}' stop-opacity='.35'/><stop offset='1' stop-color='{color}' stop-opacity='0'/>"
+            f"</linearGradient></defs>"
+            f"<polygon points='2,{h} {pts} {w - 2},{h}' fill='url(#{gid})'/>"
+            f"<polyline points='{pts}' fill='none' stroke='{color}' stroke-width='2.2' stroke-linejoin='round' stroke-linecap='round'/>"
+            f"</svg>")
+
+
 def sidebar_info(meta):
     apply_style()
     m = meta["metricas_test"][meta["modelo_final"]]
+    ok = model_health()
+    estado = ("<i></i> En producción" if ok else
+              "<i style='background:#E84B55;box-shadow:0 0 0 3px rgba(232,75,85,.25)'></i> No disponible")
     with st.sidebar:
         st.markdown(
-            f"<div class='sb-card'><div class='lbl'>Modelo en producción</div>"
-            f"<div class='val'>{meta['modelo_final']}</div><div class='sb-grid'>"
-            f"<div><div class='lbl'>ROC-AUC</div><b>{m['ROC-AUC']:.3f}</b></div>"
-            f"<div><div class='lbl'>Recall</div><b>{m['Recall']:.1%}</b></div>"
-            f"<div><div class='lbl'>F1</div><b>{m['F1']:.3f}</b></div>"
-            f"<div><div class='lbl'>Umbral</div><b>{meta['umbral_decision']:.2f}</b></div></div></div>"
-            "<div class='sb-foot'>Grupo 6 · Luis Mario Chamizo Tiafi<br>Juan Diego Chamizo Tiafi<br>"
-            "Fundación Universitaria de Popayán</div>",
+            "<div class='sbm'><div class='cap'>Modelo en producción</div>"
+            f"<div class='row'><div class='bx'>{icon('neurology')}</div><div>"
+            f"<div class='nm'>{meta['modelo_final']}</div><div class='st'>{estado}</div></div></div>"
+            "<div class='gr'>"
+            f"<div><div class='k'>ROC-AUC</div><div class='v'>{m['ROC-AUC']:.3f}</div></div>"
+            f"<div><div class='k'>Recall</div><div class='v'>{m['Recall']:.1%}</div></div>"
+            f"<div><div class='k'>F1-Score</div><div class='v'>{m['F1']:.3f}</div></div>"
+            f"<div><div class='k'>Umbral</div><div class='v'>{meta['umbral_decision']:.2f}</div></div>"
+            "</div></div>"
+            "<div class='sbf'>"
+            f"<div>{icon('groups')}<span>Grupo 6<br>Luis Mario Chamizo Tiafi<br>Juan Diego Chamizo Tiafi</span></div>"
+            f"<div>{icon('account_balance')}<span>Fundación Universitaria<br>de Popayán</span></div>"
+            "</div>",
             unsafe_allow_html=True)

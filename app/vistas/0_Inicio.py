@@ -1,80 +1,215 @@
 # =====================================================
-# PÁGINA DE INICIO – CHURN PREDICTION INTELIGENTE (Grupo 6)
+# INICIO – PANEL EJECUTIVO (Churn Prediction Inteligente · Grupo 6)
+# Todas las cifras provienen de los artefactos reales del proyecto:
+#   models/metadata.json, data/clientes_scored.csv,
+#   reports/curvas_roc.json y reports/shap_importancia_global.csv
 # =====================================================
+import json
 import sys
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
+import plotly.graph_objects as go
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # carpeta app/ (utils.py)
-from utils import footer, icon, load_models, load_scored, page_header, section, sidebar_info  # noqa: E402
+from utils import (PLOTLY_LAYOUT, REPORTS, RISK_COLORS, fecha_es, footer, icon,  # noqa: E402
+                   load_models, load_scored, model_health, sidebar_info, sparkline_svg)
 
 meta, final, todos = load_models()
 scored = load_scored()
 sidebar_info(meta)
 
-m = meta["metricas_test"][meta["modelo_final"]]
+FINAL = meta["modelo_final"]
+THR, HIGH = meta["umbral_decision"], meta["umbral_riesgo_alto"]
+m = meta["metricas_test"][FINAL]
 activos = scored[scored["ChurnReal"] == 0]
+n_alto = int((activos["NivelRiesgo"] == "Alto").sum())
+miles = lambda n: f"{n:,}".replace(",", ".")  # noqa: E731
+BLUE, GREEN, RED, VIOLET, YELLOW = "#2784E8", "#16B978", "#E84B55", "#852DDE", "#F5B51B"
 
-page_header(
-    "insights", "Churn Prediction Inteligente",
-    "Plataforma de <b>predicción de abandono de clientes</b> de telecomunicaciones con <i>machine learning</i>, "
-    "<b>explicabilidad SHAP</b> y <b>recomendaciones de retención personalizadas</b>, desarrollada con la "
-    "metodología CRISP-DM sobre el dataset <i>Telco Customer Churn</i>.",
-    chips=["CRISP-DM", "5 modelos + Stacking", "XGBoost en producción", "SHAP", "RFM", "Grupo 6 · FUP"],
-)
+# -----------------------------------------------------
+# Barra superior
+# -----------------------------------------------------
+st.markdown(
+    "<div class='topbar'>"
+    f"<span class='tb-ico' title='{n_alto} clientes activos en riesgo alto'>{icon('notifications')}"
+    f"<span class='badge'>{n_alto}</span></span>"
+    "<a class='tb-ico' href='https://github.com/luis-chamizo/churn-prediction-grupo6#readme' target='_blank' "
+    f"title='Documentación del proyecto'>{icon('help')}</a>"
+    f"<span class='tb-user'><span class='av'>{icon('person')}</span>Grupo 6</span>"
+    "</div>", unsafe_allow_html=True)
 
-c1, c2, c3, c4 = st.columns(4)
-c1.metric("Clientes analizados", f"{len(scored):,}".replace(",", "."))
-c2.metric("ROC-AUC del modelo", f"{m['ROC-AUC']:.3f}",
-          help=f"Conjunto de prueba. IC 95 % bootstrap: {meta['auc_ic95_final'][0]:.3f} – {meta['auc_ic95_final'][1]:.3f}")
-c3.metric("Abandonos detectados (Recall)", f"{m['Recall']:.1%}",
-          help="Proporción de clientes que abandonan que el modelo identifica")
-c4.metric("Clientes activos en riesgo alto", f"{(activos['NivelRiesgo'] == 'Alto').sum():,}",
-          help=f"Probabilidad de abandono ≥ {meta['umbral_riesgo_alto']:.0%}")
+# -----------------------------------------------------
+# Encabezado con estado del sistema
+# -----------------------------------------------------
+ok = model_health()
+chips = [("account_tree", "CRISP-DM"), ("settings", FINAL), ("auto_awesome", "SHAP"), ("database", "RFM"),
+         ("school", "Grupo 6 - FUP")]
+estado = (f"<div class='ok'>{icon('check')}</div><div><b>Modelo operativo</b><small>En producción</small></div>" if ok else
+          f"<div class='ok' style='background:{RED}'>{icon('close')}</div><div><b>Modelo no disponible</b>"
+          "<small>Revisar los artefactos</small></div>")
+st.markdown(
+    "<div class='hero2'><div>"
+    f"<h1>{icon('bar_chart')}Churn Prediction <em>Inteligente</em></h1>"
+    "<p>Plataforma de predicción de abandono de clientes de telecomunicaciones con <i>machine learning</i>, "
+    "explicabilidad SHAP y recomendaciones de retención, desarrollada con la metodología CRISP-DM.</p>"
+    "<div class='chips'>" + "".join(f"<span class='chip'>{icon(i)}{t}</span>" for i, t in chips) + "</div></div>"
+    "<div class='status'>"
+    f"<div class='it'>{estado}</div>"
+    f"<div class='it'>{icon('calendar_month')}<div><small>Última actualización</small>"
+    f"<b>{fecha_es(meta['fecha_entrenamiento'])}</b></div></div>"
+    f"<div class='it'>{icon('layers')}<div><small>Modelo actual</small><b>{FINAL}</b></div></div>"
+    "</div></div>", unsafe_allow_html=True)
 
-section("Módulos de la plataforma", "apps")
-modulos = [
-    ("person_search", "Predicción individual", "Probabilidad de abandono de un cliente, explicación SHAP, recomendaciones "
-     "priorizadas y simulador de acciones de retención.", "vistas/1_Prediccion_individual.py"),
-    ("upload_file", "Predicción por lotes", "Sube un CSV con muchos clientes, valida el formato y descarga las "
-     "predicciones con factores y recomendaciones.", "vistas/2_Prediccion_por_lotes.py"),
-    ("monitoring", "Dashboard de riesgo", "Cartera completa con filtros, matriz riesgo × valor, plan de acción y lista "
-     "descargable de clientes para campañas.", "vistas/3_Dashboard_de_riesgo.py"),
-    ("analytics", "Desempeño de modelos", "Comparación de los 6 modelos: métricas, curvas ROC, matrices de confusión "
-     "e importancia global SHAP.", "vistas/4_Desempeno_de_modelos.py"),
+# -----------------------------------------------------
+# KPIs con minigráficas construidas a partir de datos reales
+# -----------------------------------------------------
+curvas = json.load(open(REPORTS / "curvas_roc.json"))
+test = scored[scored["Conjunto"] == "test"]
+orden = np.argsort(-test["ProbChurn"].values)
+captura = np.cumsum(test["ChurnReal"].values[orden]) / test["ChurnReal"].sum()
+gain = captura[np.linspace(0, len(captura) - 1, 25).astype(int)]
+tenure_dist = scored["tenure"].value_counts().sort_index().rolling(6, min_periods=1).mean().values
+prob_hist = np.histogram(activos["ProbChurn"], bins=24, range=(0, 1))[0]
+
+d_auc, d_rec = m["ROC-AUC"] - 0.84, (m["Recall"] - 0.70) * 100
+kpis = [
+    ("blue", "group", "Clientes analizados", miles(len(scored)),
+     f"<span class='dl neutral'>{miles(len(activos))} activos</span>",
+     sparkline_svg(tenure_dist, BLUE, "Distribución de clientes por antigüedad (0–72 meses)")),
+    ("green", "track_changes", "ROC-AUC del modelo", f"{m['ROC-AUC']:.3f}",
+     f"<span class='dl {'up' if d_auc >= 0 else 'warn'}'>{'↑' if d_auc >= 0 else '↓'} {d_auc:+.3f} vs meta 0,84</span>",
+     sparkline_svg(curvas[FINAL]["tpr"], GREEN, "Curva ROC del modelo en el conjunto de prueba")),
+    ("red", "warning", "Abandonos detectados (Recall)", f"{m['Recall']:.1%}",
+     f"<span class='dl {'up' if d_rec >= 0 else 'warn'}'>{'↑' if d_rec >= 0 else '↓'} {d_rec:+.1f} pp vs meta 70 %</span>",
+     sparkline_svg(gain, RED, "Curva de ganancia: % de abandonos capturados al contactar por riesgo")),
+    ("violet", "person_alert", "Clientes en riesgo alto", miles(n_alto),
+     f"<span class='dl vio'>{n_alto / len(activos):.1%} de los activos</span>",
+     sparkline_svg(prob_hist, VIOLET, "Distribución de la probabilidad de abandono de los clientes activos")),
 ]
-cols = st.columns(4)
-for col, (ico, titulo, desc, pagina) in zip(cols, modulos):
-    with col:
-        st.markdown(f"<div class='feature'><div class='ico'>{icon(ico)}</div><h4>{titulo}</h4><p>{desc}</p></div>",
-                    unsafe_allow_html=True)
+st.markdown("<div class='kpis'>" + "".join(
+    f"<div class='kpi {c}'><div class='ic'>{icon(i)}</div><div class='t'>{t}</div><div class='vv'>{v}</div>"
+    f"<div class='ft'>{d}{sp}</div></div>" for c, i, t, v, d, sp in kpis) + "</div>", unsafe_allow_html=True)
+
+
+def panel_header(titulo: str, ayuda: str, lead: str | None = None):
+    lead_html = icon(lead, "lead") if lead else ""
+    st.markdown(f"<div class='ph'>{lead_html}{titulo}<span class='mi' title='{ayuda}'>info</span></div>",
+                unsafe_allow_html=True)
+
+
+# -----------------------------------------------------
+# Fila de gráficos
+# -----------------------------------------------------
+g1, g2 = st.columns([1, 1.35], gap="medium")
+with g1:
+    with st.container(key="panel_riesgo"):
+        panel_header("Distribución de clientes por nivel de riesgo",
+                     f"Clasificación del modelo: Bajo < {THR:.0%} ≤ Medio < {HIGH:.0%} ≤ Alto")
+        poblacion = st.segmented_control("Población", ["Clientes activos", "Toda la cartera"],
+                                         default="Clientes activos", key="pob_riesgo", label_visibility="collapsed")
+        base = activos if poblacion != "Toda la cartera" else scored
+        cnt = base["NivelRiesgo"].value_counts().reindex(["Alto", "Medio", "Bajo"]).fillna(0).astype(int)
+        c_a, c_b = st.columns([1.05, 1])
+        with c_a:
+            fig = go.Figure(go.Pie(
+                values=cnt.values, labels=[f"Riesgo {k.lower()}" for k in cnt.index], hole=0.7, sort=False,
+                direction="clockwise", marker=dict(colors=[RISK_COLORS[k] for k in cnt.index], line=dict(color="#fff", width=3)),
+                textinfo="none", hovertemplate="%{label}: %{value:,} clientes (%{percent})<extra></extra>"))
+            fig.update_layout(**{**PLOTLY_LAYOUT, "margin": dict(l=0, r=0, t=0, b=0)}, height=215, showlegend=False,
+                              annotations=[dict(text=f"<b style='font-size:26px;color:#102A43'>{miles(cnt.sum())}</b>"
+                                                     f"<br><span style='font-size:13px;color:#52647a'>Clientes</span>",
+                                                showarrow=False, x=0.5, y=0.5)])
+            st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
+        with c_b:
+            st.markdown("<div class='lg'>" + "".join(
+                f"<div class='r'><i style='background:{RISK_COLORS[k]}'></i><span>Riesgo {k.lower()}</span>"
+                f"<span><b>{miles(v)}</b> <small>({v / cnt.sum():.1%})</small></span></div>"
+                for k, v in cnt.items()) + "</div>", unsafe_allow_html=True)
+
+with g2:
+    with st.container(key="panel_comportamiento"):
+        h_a, h_b = st.columns([1.6, 1])
+        with h_a:
+            panel_header("Comportamiento del abandono",
+                         "El dataset no tiene fechas: el eje es la antigüedad del cliente (meses desde que se afilió). "
+                         "Abandonos = casos reales del histórico; en riesgo = probabilidad ≥ umbral de decisión.")
+        ventanas = {"Primer año": (12, 1), "Primeros 2 años": (24, 2), "Ciclo completo": (72, 6)}
+        with h_b:
+            ventana = st.selectbox("Ventana", list(ventanas), index=2, key="ventana_abandono",
+                                   label_visibility="collapsed")
+        limite, paso = ventanas[ventana]
+        t = scored[scored["tenure"] <= limite].copy()
+        t["bin"] = (t["tenure"].clip(lower=1) - 1) // paso
+        agg = t.groupby("bin").agg(riesgo=("ProbChurn", lambda s: int((s >= THR).sum())),
+                                   abandonos=("ChurnReal", "sum")).reindex(range(limite // paso), fill_value=0)
+        etiquetas = [f"M{i + 1}" if paso == 1 else f"{i * paso + 1}–{(i + 1) * paso}" for i in agg.index]
+        fig = go.Figure()
+        for col, nombre, color, fill in [("riesgo", "Clientes en riesgo", BLUE, "rgba(39,132,232,.14)"),
+                                         ("abandonos", "Abandonos", VIOLET, "rgba(133,45,222,.10)")]:
+            fig.add_trace(go.Scatter(x=etiquetas, y=agg[col], name=nombre, mode="lines+markers",
+                                     line=dict(color=color, width=2.6, shape="spline", smoothing=0.6),
+                                     marker=dict(size=8, color="#fff", line=dict(color=color, width=2.4)),
+                                     fill="tozeroy", fillcolor=fill,
+                                     hovertemplate=f"{nombre}: %{{y:,}}<extra>%{{x}}</extra>"))
+        fig.update_layout(**{**PLOTLY_LAYOUT, "margin": dict(l=6, r=6, t=28, b=6)}, height=245, hovermode="x unified",
+                          legend=dict(orientation="h", x=1, xanchor="right", y=1.14, font=dict(size=12)),
+                          yaxis=dict(gridcolor="#edf2f8", zeroline=False),
+                          xaxis=dict(showgrid=False, tickangle=0, tickfont=dict(size=11)))
+        st.plotly_chart(fig, width="stretch", config={"displayModeBar": False})
+
+# -----------------------------------------------------
+# Fila de inteligencia analítica
+# -----------------------------------------------------
+p1, p2, p3 = st.columns([1, 1.05, 1], gap="medium")
+with p1:
+    with st.container(key="panel_shap"):
+        panel_header("Top factores de abandono (SHAP)",
+                     f"Importancia global: media del |valor SHAP| por variable original, modelo {FINAL}, conjunto de prueba")
+        imp = pd.read_csv(REPORTS / "shap_importancia_global.csv", index_col=0)["mean_abs_shap"].head(6)
+        st.markdown("<div class='shp'>" + "".join(
+            f"<div class='r'><span>{nombre}</span><div class='tr'><div class='br' style='width:{v / imp.max() * 100:.0f}%'></div></div>"
+            f"<b>{v:.2f}</b></div>" for nombre, v in imp.items()) + "</div>"
+            f"<div class='shp-note'>Valores en {meta.get('shap_unidad', 'log-odds')} · fuente: análisis SHAP del modelo en producción.</div>",
+            unsafe_allow_html=True)
+
+with p2:
+    with st.container(key="panel_prioritarios"):
+        panel_header("Clientes prioritarios para retención",
+                     "Clientes activos ordenados por probabilidad de abandono. Haz clic en una columna para ordenar.")
+        buscar = st.text_input("Buscar", placeholder="Buscar ID de cliente…", key="buscar_id",
+                               label_visibility="collapsed")
+        tabla = (activos.sort_values("ProbChurn", ascending=False)[["customerID", "NivelRiesgo", "ProbChurn"]]
+                 .rename(columns={"customerID": "ID Cliente", "NivelRiesgo": "Riesgo", "ProbChurn": "Prob. abandono"}))
+        if buscar:
+            tabla = tabla[tabla["ID Cliente"].str.contains(buscar.strip(), case=False, na=False)]
+        estilos = {"Alto": "background-color:#fde3e5;color:#c0303a;font-weight:600",
+                   "Medio": "background-color:#fdf1d3;color:#9a6a00;font-weight:600",
+                   "Bajo": "background-color:#dcf6ea;color:#0e8a57;font-weight:600"}
+        st.dataframe(tabla.head(200).style.map(lambda v: estilos.get(v, ""), subset=["Riesgo"])
+                     .format({"Prob. abandono": "{:.2f}"}),
+                     hide_index=True, width="stretch", height=230)
+
+with p3:
+    with st.container(key="panel_reco"):
+        panel_header("Recomendación inteligente",
+                     "Acciones del motor de recomendaciones del proyecto (reglas de negocio ordenadas por SHAP), "
+                     "contadas sobre los clientes activos en riesgo alto.", lead="auto_awesome")
+        alto = activos[activos["NivelRiesgo"] == "Alto"]
+        acciones = alto["Recomendaciones"].dropna().str.split(" | ", regex=False).explode().value_counts().head(3)
+        items = "".join(f"<li>{icon('check_circle')}<span>{a}<br><small>{miles(int(c))} clientes "
+                        f"({c / max(len(alto), 1):.0%})</small></span></li>" for a, c in acciones.items())
+        st.markdown(
+            f"<div class='reco'><div class='tg'>{icon('target')}</div><div>"
+            f"<p>Se recomienda priorizar <b>{miles(n_alto)} clientes</b> en riesgo alto con campañas de retención "
+            f"personalizadas, como:</p><ul>{items}</ul></div></div>"
+            "<div class='reco-note'>Las 3 acciones más frecuentes entre las recomendaciones personalizadas de esos clientes.</div>",
+            unsafe_allow_html=True)
         try:
-            st.page_link(pagina, label=f"Abrir {titulo.lower()}", icon=":material/arrow_forward:")
-        except Exception:  # la página se ejecuta fuera del menú de navegación (p. ej. en pruebas)
+            st.page_link("vistas/3_Dashboard_de_riesgo.py", label="Ver lista de campaña", icon=":material/arrow_forward:")
+        except Exception:  # fuera del menú de navegación (pruebas)
             pass
-
-section("Metodología CRISP-DM", "account_tree")
-fases = [
-    ("Negocio", "Reducir el churn priorizando por riesgo × valor. Meta: ROC-AUC ≥ 0,84 y Recall ≥ 0,70."),
-    ("Datos", "7 043 clientes y 21 variables. EDA, calidad de datos y pruebas χ² / Mann-Whitney."),
-    ("Preparación", "Limpieza, RFM adaptado y 16 variables derivadas en un Pipeline sin fuga de datos."),
-    ("Modelado", "LR, Random Forest, XGBoost, LightGBM, MLP y Stacking con CV estratificada de 5 pliegues."),
-    ("Evaluación", "Accuracy, F1, ROC-AUC, curva de ganancia, costo-beneficio y explicabilidad SHAP."),
-    ("Despliegue", "Esta aplicación web en Streamlit Cloud, con plan de monitoreo y reentrenamiento."),
-]
-st.markdown("<div class='steps'>" + "".join(
-    f"<div class='step'><div class='n'>{i}</div><b>{t}</b><p>{d}</p></div>" for i, (t, d) in enumerate(fases, 1)
-) + "</div>", unsafe_allow_html=True)
-
-section("Hallazgos clave", "lightbulb")
-h1, h2, h3 = st.columns(3)
-for col, (ico, titulo, texto) in zip((h1, h2, h3), [
-    ("contract", "Compromiso contractual", "El contrato mes a mes tiene 42,7 % de abandono frente a 2,8 % en contratos de 2 años."),
-    ("hourglass_top", "Primeros meses críticos", "Los clientes que se van llevan una mediana de 10 meses; el riesgo cae tras el primer año."),
-    ("shield_lock", "Servicios de protección", "Sin seguridad en línea ni soporte técnico el abandono sube a ~42 %."),
-]):
-    col.markdown(f"<div class='feature' style='min-height:130px'><div class='ico'>{icon(ico)}</div><h4>{titulo}</h4>"
-                 f"<p>{texto}</p></div>", unsafe_allow_html=True)
 
 footer()
