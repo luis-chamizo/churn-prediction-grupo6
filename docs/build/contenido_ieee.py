@@ -338,13 +338,13 @@ p(f"Para el modelo final se usó TreeSHAP [6] (contribuciones en {shap_unit}). L
 fig_(rel("14_shap_importancia_global"), "Importancia global SHAP (media del valor absoluto) agregada por variable original.", scale=0.92)
 fig_(rel("13_shap_beeswarm"), "Gráfico beeswarm de SHAP en el conjunto de prueba. Cada punto es un cliente; el color indica el valor "
      "de la variable (azul bajo, naranja alto).", scale=0.95)
-p("Los gráficos de dependencia (Fig. 12) revelan efectos **no lineales**: el riesgo asociado a la antigüedad es muy alto en los "
+p("Los gráficos de dependencia (Fig. 13) revelan efectos **no lineales**: el riesgo asociado a la antigüedad es muy alto en los "
   "primeros meses y cae marcadamente después del primer año, y su magnitud depende del tipo de contrato. A nivel individual "
-  "(Fig. 13), SHAP identifica los factores concretos que llevan a un cliente a una probabilidad alta, que es exactamente la "
+  "(Fig. 12), SHAP identifica los factores concretos que llevan a un cliente a una probabilidad alta, que es exactamente la "
   "información que necesita el equipo de retención.")
+fig_(rel("16_shap_local_alto"), "Explicación local SHAP del cliente de mayor riesgo del conjunto de prueba (10 factores principales).")
 fig_(rel("15_shap_dependencia"), "Gráficos de dependencia SHAP para antigüedad, cargo mensual y variación de tarifa. Color: tipo de "
      "contrato (naranja = mes a mes).", wide=True, scale=0.95)
-fig_(rel("16_shap_local_alto"), "Explicación local SHAP del cliente de mayor riesgo del conjunto de prueba (10 factores principales).")
 h2("Verificación de criterios de éxito")
 tab("Cumplimiento de los criterios de éxito", [
     ["Criterio", "Resultado", "¿Cumple?"],
@@ -430,6 +430,17 @@ B.append({"type": "refs", "items": [
     "D. E. Rumelhart, G. E. Hinton, and R. J. Williams, “Learning representations by back-propagating errors,” *Nature*, vol. 323, pp. 533–536, 1986.",
     "D. R. Cox, “The regression analysis of binary sequences,” *J. Royal Statistical Society: Series B*, vol. 20, no. 2, pp. 215–242, 1958.",
 ]})
+
+# Evita huecos en blanco: después de cada figura ancha debe venir texto (que sí fluye en las columnas)
+i = 0
+while i < len(B):
+    if B[i]["type"] == "widefig":
+        j = i + 1
+        while j < len(B) and B[j]["type"] in ("fig", "table"):
+            j += 1
+        if j > i + 1 and j < len(B) and B[j]["type"] == "p":
+            B.insert(i + 1, B.pop(j))
+    i += 1
 
 spec = {
     "title": "Churn Prediction Inteligente: modelo predictivo explicable para la retención de clientes de telecomunicaciones con CRISP-DM",

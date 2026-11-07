@@ -131,6 +131,10 @@
    "scale": 0.92
   },
   {
+   "type": "p",
+   "text": "Para cuantificar estas relaciones se aplicaron pruebas χ² con V de Cramér a las variables categóricas y la prueba de Mann-Whitney U a las numéricas (Tabla II). Las asociaciones más fuertes corresponden a **Antigüedad (meses)**, **Tipo de contrato** y **Seguridad en línea**. Además, *TotalCharges* está fuertemente correlacionada con *tenure* (ρ de Spearman ≈ 0,89), redundancia que motiva una variable derivada de gasto promedio."
+  },
+  {
    "type": "fig",
    "src": "../../reports/figures/doc_churn_variables_clave.png",
    "caption": "Tasa de churn por categoría en seis variables clave. Línea punteada: tasa global; naranja: categorías por encima del promedio.",
@@ -204,10 +208,6 @@
    "note": "Efecto: V de Cramér (χ²) o correlación biserial de rangos (Mann-Whitney U). Top 8 de 19 variables."
   },
   {
-   "type": "p",
-   "text": "Para cuantificar estas relaciones se aplicaron pruebas χ² con V de Cramér a las variables categóricas y la prueba de Mann-Whitney U a las numéricas (Tabla II). Las asociaciones más fuertes corresponden a **Antigüedad (meses)**, **Tipo de contrato** y **Seguridad en línea**. Además, *TotalCharges* está fuertemente correlacionada con *tenure* (ρ de Spearman ≈ 0,89), redundancia que motiva una variable derivada de gasto promedio."
-  },
-  {
    "type": "h1",
    "text": "Fase 3: Preparación de los datos"
   },
@@ -241,6 +241,10 @@
    "src": "../../reports/figures/05_segmentos_rfm.png",
    "caption": "Izquierda: tasa de churn por segmento RFM (entrenamiento). Derecha: tasa de churn por combinación de puntajes R (antigüedad) y F (servicios).",
    "scale": 0.92
+  },
+  {
+   "type": "p",
+   "text": "La información mutua con la variable objetivo (Fig. 4) confirma el valor del *feature engineering*: varias variables derivadas, como la duración del contrato, el puntaje R, el segmento RFM o la fibra sin protección, aparecen entre las más informativas."
   },
   {
    "type": "table",
@@ -300,10 +304,6 @@
     0.55
    ],
    "note": null
-  },
-  {
-   "type": "p",
-   "text": "La información mutua con la variable objetivo (Fig. 4) confirma el valor del *feature engineering*: varias variables derivadas, como la duración del contrato, el puntaje R, el segmento RFM o la fibra sin protección, aparecen entre las más informativas."
   },
   {
    "type": "fig",
@@ -574,19 +574,19 @@
   },
   {
    "type": "p",
-   "text": "Los gráficos de dependencia (Fig. 12) revelan efectos **no lineales**: el riesgo asociado a la antigüedad es muy alto en los primeros meses y cae marcadamente después del primer año, y su magnitud depende del tipo de contrato. A nivel individual (Fig. 13), SHAP identifica los factores concretos que llevan a un cliente a una probabilidad alta, que es exactamente la información que necesita el equipo de retención."
-  },
-  {
-   "type": "widefig",
-   "src": "../../reports/figures/15_shap_dependencia.png",
-   "caption": "Gráficos de dependencia SHAP para antigüedad, cargo mensual y variación de tarifa. Color: tipo de contrato (naranja = mes a mes).",
-   "scale": 0.95
+   "text": "Los gráficos de dependencia (Fig. 13) revelan efectos **no lineales**: el riesgo asociado a la antigüedad es muy alto en los primeros meses y cae marcadamente después del primer año, y su magnitud depende del tipo de contrato. A nivel individual (Fig. 12), SHAP identifica los factores concretos que llevan a un cliente a una probabilidad alta, que es exactamente la información que necesita el equipo de retención."
   },
   {
    "type": "fig",
    "src": "../../reports/figures/16_shap_local_alto.png",
    "caption": "Explicación local SHAP del cliente de mayor riesgo del conjunto de prueba (10 factores principales).",
    "scale": 1
+  },
+  {
+   "type": "widefig",
+   "src": "../../reports/figures/15_shap_dependencia.png",
+   "caption": "Gráficos de dependencia SHAP para antigüedad, cargo mensual y variación de tarifa. Color: tipo de contrato (naranja = mes a mes).",
+   "scale": 0.95
   },
   {
    "type": "h2",
