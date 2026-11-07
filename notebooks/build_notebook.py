@@ -84,6 +84,15 @@ import shap, joblib, sklearn, xgboost, lightgbm
 
 warnings.filterwarnings("ignore")
 
+# --- Google Colab: si solo se subió el notebook, descarga el repo (src/, data/) ---
+if "google.colab" in sys.modules:
+    import os, subprocess
+    repo = Path("/content/churn-prediction-grupo6")
+    if not repo.exists():
+        subprocess.run(["git", "clone", "-q",
+                        "https://github.com/luis-chamizo/churn-prediction-grupo6.git", str(repo)], check=True)
+    os.chdir(repo)
+
 # Rutas del proyecto
 ROOT = Path.cwd().parent if Path.cwd().name == "notebooks" else Path.cwd()
 sys.path.insert(0, str(ROOT / "src"))
