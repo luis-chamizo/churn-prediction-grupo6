@@ -309,3 +309,64 @@ span.mi { font-family: 'Material Symbols Rounded' !important; }
   .status b { font-size: .8rem; }
 }
 @media (max-width: 640px) { .lg { padding: .4rem 0 .9rem; } }
+
+/* =====================  v5: menú compacto (sin scroll)  ===================== */
+[data-testid="stSidebarHeader"] { padding: .9rem 1rem .3rem 1.1rem !important; margin-bottom: 0 !important; }
+[data-testid="stSidebarLogo"], [data-testid="stSidebarHeader"] img { height: 2.7rem !important; }
+[data-testid="stSidebarUserContent"] { padding-top: .4rem !important; padding-bottom: .8rem !important; }
+[data-testid="stSidebarNav"] { padding-top: .2rem !important; }
+[data-testid="stSidebarNav"] ul { gap: 0 !important; }
+[data-testid="stSidebarNav"] a { margin: 1px 10px !important; padding: .42rem .75rem !important; min-height: 0 !important; }
+[data-testid="stSidebarNav"] a span[label] p { font-size: .93rem !important; }
+[data-testid="stSidebarNavSeparator"] { margin: .3rem 1rem .5rem !important; }
+.sbm { padding: .75rem .85rem; border-radius: 14px; }
+.sbm .row { margin: .45rem 0 .5rem; gap: .6rem; }
+.sbm .bx { width: 38px; height: 38px; border-radius: 10px; }
+.sbm .bx .mi { font-size: 22px; }
+.sbm .nm { font-size: 1.02rem; }
+.sbm .gr > div { padding: .45rem .2rem; }
+.sbm .v { font-size: 1rem; }
+.sbf { margin-top: .9rem; gap: .55rem; font-size: .74rem; line-height: 1.38; }
+.sbf .mi { font-size: 18px; }
+
+/* =====================  v5: menú contraído = riel de íconos (escritorio)  ===================== */
+@media (min-width: 641px) {
+  /* el botón de expandir solo existe con el menú contraído: lo usamos para detectar el estado */
+  [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stSidebar"] {
+    transform: none !important; width: 74px !important; min-width: 74px !important; max-width: 74px !important;
+    overflow: hidden !important; box-shadow: 2px 0 12px rgba(6,38,74,.12);
+  }
+  [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stSidebarContent"] {
+    width: 74px !important; overflow: hidden !important; }
+  /* en el riel: sin cabecera, tarjeta del modelo ni datos académicos */
+  [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stSidebarHeader"],
+  [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stSidebarUserContent"],
+  [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stSidebarNavSeparator"] { display: none !important; }
+  [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stSidebarNav"] { padding-top: 4.6rem !important; }
+  /* solo íconos, centrados */
+  [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stSidebarNav"] a {
+    justify-content: center !important; margin: 4px 12px !important; padding: .62rem 0 !important; }
+  [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stSidebarNav"] a span[label] { display: none !important; }
+  [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stSidebarNav"] a [data-testid="stIconMaterial"] {
+    font-size: 1.35rem !important; margin: 0 !important; }
+  [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stSidebarNav"] a > span:first-child { margin: 0 !important; }
+  /* cabecera: franja azul sobre el riel y logo-ícono centrado en ella */
+  [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stHeader"] {
+    background: linear-gradient(90deg, #06264A 0 74px, rgba(241,246,252,.92) 74px) !important; }
+  [data-testid="stHeaderLogo"] { position: fixed !important; left: 15px !important; top: 14px !important; height: 44px !important; width: 44px !important; }
+  /* botón expandir abajo del riel, como «Contraer menú» */
+  [data-testid="stExpandSidebarButton"] { position: fixed !important; left: 19px !important; bottom: 18px !important; top: auto !important;
+    width: 36px; height: 36px; border-radius: 10px !important; background: rgba(255,255,255,.10) !important; z-index: 1000100; }
+  [data-testid="stExpandSidebarButton"] svg, [data-testid="stExpandSidebarButton"] span { color: #ffffff !important; fill: #ffffff !important; }
+}
+/* v5.1 correcciones del riel */
+[data-testid="stHeader"] { backdrop-filter: none !important; background: #F1F6FC !important; }
+@media (min-width: 641px) {
+  [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stHeader"] { background: #F1F6FC !important; }
+  [data-testid="stHeaderLogo"] { left: 15px !important; top: 16px !important; z-index: 1000101; }
+  [data-testid="stExpandSidebarButton"] { top: calc(100vh - 56px) !important; bottom: auto !important; left: 19px !important; }
+  [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stSidebarNav"] a {
+    width: 50px !important; height: 46px !important; margin: 5px auto !important; padding: 0 !important; }
+  [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stSidebarNav"] li { display: flex; justify-content: center; }
+}
+@media (min-width: 641px) { [data-testid="stApp"]:has([data-testid="stExpandSidebarButton"]) [data-testid="stHeader"] { z-index: 1000200 !important; } }
