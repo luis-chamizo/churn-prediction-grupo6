@@ -32,8 +32,11 @@ met = pd.DataFrame(meta["metricas_test"]).T
 met.insert(0, "Umbral", pd.Series(meta["umbrales_por_modelo"]))
 met = met[["Umbral", "Accuracy", "Precision", "Recall", "F1", "ROC-AUC", "PR-AUC", "Brier", "roc_auc_cv"]]
 met = met.rename(columns={"roc_auc_cv": "ROC-AUC (CV)"}).sort_values("ROC-AUC", ascending=False)
-st.dataframe(met.style.format("{:.4f}").highlight_max(subset=["Accuracy", "Precision", "Recall", "F1", "ROC-AUC", "PR-AUC", "ROC-AUC (CV)"],
-                                                    color="#cde2fb").highlight_min(subset=["Brier"], color="#cde2fb"),
+# Fondo claro + texto oscuro fijo: legible tanto en tema claro como en oscuro
+resaltado = "background-color:#cde2fb;color:#0b2a4a;font-weight:700"
+st.dataframe(met.style.format("{:.4f}")
+             .highlight_max(subset=["Accuracy", "Precision", "Recall", "F1", "ROC-AUC", "PR-AUC", "ROC-AUC (CV)"], props=resaltado)
+             .highlight_min(subset=["Brier"], props=resaltado),
              width="stretch")
 st.caption("Umbral elegido maximizando F1 sobre predicciones out-of-fold del entrenamiento (sin usar el test). "
            "Celdas resaltadas = mejor valor por métrica. Brier: menor es mejor (calibración).")
