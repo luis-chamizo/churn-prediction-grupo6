@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # carpeta app/ (utils.py)
-from utils import (footer, icon, page_header, section, C_NO, C_SI, CATEGORY_OPTIONS, FEATURE_LABELS, MODEL_COLORS,  # noqa: E402
+from utils import (icon, page_header, section, C_NO, C_SI, CATEGORY_OPTIONS, FEATURE_LABELS, MODEL_COLORS,  # noqa: E402
                    PLOTLY_LAYOUT, RAW_FEATURES, RISK_COLORS, engineered_row, explain, fmt_value,
                    load_models, load_scored, recommend, risk_badge, risk_level,
                    sidebar_info, value_segment, what_if)
@@ -21,7 +21,7 @@ THR, HIGH = meta["umbral_decision"], meta["umbral_riesgo_alto"]
 page_header("person_search", "Predicción individual de churn",
             "Evalúa un cliente de la cartera o ingresa sus datos: obtén su probabilidad de abandono, los factores "
             "que la explican (SHAP), recomendaciones de retención priorizadas y un simulador de acciones.",
-            chips=[f"Modelo: {meta['modelo_final']}", f"Umbral: {THR:.0%}", f"Riesgo alto ≥ {HIGH:.0%}"])
+            chips=[f"Riesgo medio ≥ {THR:.0%}", f"Riesgo alto ≥ {HIGH:.0%}", "Explicación SHAP", "Simulador de acciones"])
 
 # -----------------------------------------------------
 # Selección de cliente o ingreso manual
@@ -169,5 +169,3 @@ with st.expander("Comparar la predicción de los 6 modelos"):
     fig.add_vline(x=THR, line_dash="dash", line_color="#898781")
     fig.update_layout(**PLOTLY_LAYOUT, height=300, xaxis=dict(range=[0, 1.1], tickformat=".0%"))
     st.plotly_chart(fig, width="stretch")
-
-footer()

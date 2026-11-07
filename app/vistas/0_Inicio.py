@@ -14,7 +14,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # carpeta app/ (utils.py)
-from utils import (PLOTLY_LAYOUT, REPORTS, RISK_COLORS, fecha_es, footer, icon,  # noqa: E402
+from utils import (PLOTLY_LAYOUT, REPORTS, RISK_COLORS, fecha_es, icon,  # noqa: E402
                    load_models, load_scored, model_health, sidebar_info, sparkline_svg)
 
 meta, final, todos = load_models()
@@ -30,22 +30,10 @@ miles = lambda n: f"{n:,}".replace(",", ".")  # noqa: E731
 BLUE, GREEN, RED, VIOLET, YELLOW = "#2784E8", "#16B978", "#E84B55", "#852DDE", "#F5B51B"
 
 # -----------------------------------------------------
-# Barra superior
-# -----------------------------------------------------
-st.markdown(
-    "<div class='topbar'>"
-    f"<span class='tb-ico' title='{n_alto} clientes activos en riesgo alto'>{icon('notifications')}"
-    f"<span class='badge'>{n_alto}</span></span>"
-    "<a class='tb-ico' href='https://github.com/luis-chamizo/churn-prediction-grupo6#readme' target='_blank' "
-    f"title='Documentación del proyecto'>{icon('help')}</a>"
-    f"<span class='tb-user'><span class='av'>{icon('person')}</span>Grupo 6</span>"
-    "</div>", unsafe_allow_html=True)
-
-# -----------------------------------------------------
 # Encabezado con estado del sistema
 # -----------------------------------------------------
 ok = model_health()
-chips = [("account_tree", "CRISP-DM"), ("settings", FINAL), ("auto_awesome", "SHAP"), ("database", "RFM"),
+chips = [("account_tree", "CRISP-DM"), ("model_training", "5 modelos + Stacking"), ("auto_awesome", "SHAP"), ("database", "RFM"),
          ("school", "Grupo 6 - FUP")]
 estado = (f"<div class='ok'>{icon('check')}</div><div><b>Modelo operativo</b><small>En producción</small></div>" if ok else
           f"<div class='ok' style='background:{RED}'>{icon('close')}</div><div><b>Modelo no disponible</b>"
@@ -60,7 +48,7 @@ st.markdown(
     f"<div class='it'>{estado}</div>"
     f"<div class='it'>{icon('calendar_month')}<div><small>Última actualización</small>"
     f"<b>{fecha_es(meta['fecha_entrenamiento'])}</b></div></div>"
-    f"<div class='it'>{icon('layers')}<div><small>Modelo actual</small><b>{FINAL}</b></div></div>"
+    f"<div class='it'>{icon('dataset')}<div><small>Dataset</small><b>Telco Customer Churn (IBM)</b></div></div>"
     "</div></div>", unsafe_allow_html=True)
 
 # -----------------------------------------------------
@@ -211,5 +199,3 @@ with p3:
             st.page_link("vistas/3_Dashboard_de_riesgo.py", label="Ver lista de campaña", icon=":material/arrow_forward:")
         except Exception:  # fuera del menú de navegación (pruebas)
             pass
-
-footer()

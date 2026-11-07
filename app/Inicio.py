@@ -8,7 +8,8 @@ import streamlit as st
 from pathlib import Path
 
 st.set_page_config(page_title="Churn Prediction Inteligente", page_icon=":material/insights:", layout="wide")
-st.logo(str(Path(__file__).resolve().parent / "logo.svg"), size="large")
+APP = Path(__file__).resolve().parent
+st.logo(str(APP / "logo.svg"), size="large", icon_image=str(APP / "logo_icono.svg"))
 
 paginas = [
     st.Page("vistas/0_Inicio.py", title="Inicio", icon=":material/space_dashboard:", default=True),

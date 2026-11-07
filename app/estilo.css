@@ -246,3 +246,66 @@ span.mi { font-family: 'Material Symbols Rounded' !important; }
 .lg .r span { white-space: nowrap; }
 .lg { gap: 1rem; }
 [data-testid="stMetricValue"], [data-testid="stMetricValue"] > div { font-size: clamp(1.35rem, 2vw, 2rem) !important; overflow: visible !important; white-space: nowrap; }
+
+
+/* =========================  v4: sin duplicados + móvil  ========================= */
+[data-testid="stHeader"] { background: rgba(241, 246, 252, .92) !important; backdrop-filter: blur(6px); }
+.block-container { padding-top: 3.6rem !important; }
+.sbm .gr.two > div { border-bottom: none !important; }
+
+@media (max-width: 640px) {
+  .block-container { padding-left: .9rem !important; padding-right: .9rem !important; padding-top: 3.8rem !important; }
+  /* encabezados compactos */
+  .hero { padding: 1.05rem 1.1rem; border-radius: 16px; margin-bottom: 1rem; }
+  .hero-row { gap: .6rem; }
+  .hero-ico { width: 40px; height: 40px; border-radius: 11px; }
+  .hero-ico .mi { font-size: 22px; }
+  .hero h1 { font-size: 1.28rem !important; line-height: 1.25; }
+  .hero p { font-size: .86rem; line-height: 1.45; }
+  .hero .chip, .hero2 .chip { font-size: .7rem; padding: .16rem .55rem; }
+  .hero2 { padding: 1.05rem 1.1rem; gap: .9rem; border-radius: 16px; }
+  .hero2 h1 { font-size: 1.35rem !important; }
+  .hero2 h1 .mi { font-size: 28px; }
+  .hero2 p { font-size: .86rem; }
+  .status { min-width: 0; padding: .6rem .8rem; }
+  .status .it { padding: .3rem 0; }
+  /* KPI del inicio: 2 por fila, más compactos */
+  .kpis { grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .kpi { padding: .75rem .8rem; grid-template-columns: 1fr; }
+  .kpi .ic { width: 36px; height: 36px; border-radius: 10px; grid-row: auto; }
+  .kpi .ic .mi { font-size: 21px; }
+  .kpi .t { font-size: .76rem; }
+  .kpi .vv { font-size: 1.4rem; }
+  .kpi .ft { flex-direction: column; align-items: flex-start; gap: .35rem; }
+  .kpi .dl { font-size: .66rem; white-space: normal; }
+  .kpi svg { width: 100%; height: 30px; }
+  /* filtros y métricas del dashboard: 2 por fila en lugar de 1 */
+  .st-key-filtros [data-testid="stHorizontalBlock"], .st-key-kpis_dash [data-testid="stHorizontalBlock"] {
+    flex-wrap: wrap !important; gap: .6rem !important; }
+  .st-key-filtros [data-testid="stColumn"], .st-key-kpis_dash [data-testid="stColumn"] {
+    flex: 1 1 calc(50% - .6rem) !important; min-width: calc(50% - .6rem) !important; width: calc(50% - .6rem) !important; }
+  .st-key-filtros [data-testid="stColumn"]:first-child { flex-basis: 100% !important; min-width: 100% !important; }
+  .st-key-filtros label p { font-size: .8rem !important; }
+  [data-testid="stMetric"] { padding: .75rem .85rem; }
+  [data-testid="stMetricLabel"] p { font-size: .74rem !important; }
+  /* paneles */
+  [class*="st-key-panel"] { padding: .85rem .9rem .6rem; min-height: 0 !important; }
+  .ph { font-size: .95rem; }
+  .shp .r { grid-template-columns: 6.8rem 1fr 2.4rem; font-size: .8rem; }
+  .section-title span { font-size: 1.05rem; }
+}
+@media (max-width: 640px) {
+  /* formulario de predicción: 2 campos por fila */
+  [data-testid="stForm"] { padding: .9rem .85rem; }
+  [data-testid="stForm"] [data-testid="stHorizontalBlock"] { flex-wrap: wrap !important; gap: .55rem !important; }
+  [data-testid="stForm"] [data-testid="stColumn"] { flex: 1 1 calc(50% - .55rem) !important; min-width: calc(50% - .55rem) !important; width: calc(50% - .55rem) !important; }
+  [data-testid="stForm"] label p { font-size: .78rem !important; }
+}
+@media (max-width: 640px) {
+  .status { display: grid; grid-template-columns: 1fr 1fr; gap: .2rem .7rem; }
+  .status .it:first-child { grid-column: 1 / -1; }
+  .status .it + .it { border-top: 1px solid rgba(255,255,255,.12); }
+  .status .it .mi { font-size: 20px; }
+  .status b { font-size: .8rem; }
+}
+@media (max-width: 640px) { .lg { padding: .4rem 0 .9rem; } }

@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # carpeta app/ (utils.py)
-from utils import (footer, page_header, section, DATA, PLOTLY_LAYOUT, RAW_FEATURES, RISK_COLORS, clean_raw,  # noqa: E402
+from utils import (page_header, section, DATA, PLOTLY_LAYOUT, RAW_FEATURES, RISK_COLORS, clean_raw,  # noqa: E402
                    load_models, score_frame, sidebar_info, validate_input)
 
 meta, final, _ = load_models()
@@ -68,5 +68,3 @@ st.dataframe(
                    "NivelRiesgo": "Nivel de riesgo", "FactoresRiesgo": "Factores de riesgo (SHAP)"})
 st.download_button("Descargar resultados (CSV)", salida.to_csv(index=False).encode("utf-8"),
                    "predicciones_churn.csv", "text/csv", type="primary", icon=":material/download:")
-
-footer()

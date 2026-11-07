@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # carpeta app/ (utils.py)
-from utils import (footer, page_header, section, C_NO, FEATURE_LABELS, FIGURES, MODEL_COLORS, PLOTLY_LAYOUT,  # noqa: E402
+from utils import (page_header, section, C_NO, FEATURE_LABELS, FIGURES, MODEL_COLORS, PLOTLY_LAYOUT,  # noqa: E402
                    REPORTS, load_models, sidebar_info)
 
 meta, _, _ = load_models()
@@ -22,7 +22,7 @@ color = {n: MODEL_COLORS[i] for i, n in enumerate(nombres)}
 page_header("analytics", "Desempeño y comparación de modelos",
             f"5 modelos requeridos + 1 ensamble Stacking, ajustados con búsqueda aleatoria y validación cruzada "
             f"estratificada de 5 pliegues. Entrenamiento: {meta['n_train']:,} clientes · prueba: {meta['n_test']:,} clientes.",
-            chips=[f"En producción: {meta['modelo_final']}", "Accuracy · F1 · ROC-AUC", "SHAP"])
+            chips=["Accuracy · F1 · ROC-AUC", "Curvas ROC", "Matrices de confusión", "SHAP"])
 
 # -----------------------------------------------------
 # Tabla de métricas
@@ -102,5 +102,3 @@ with st.expander("Hiperparámetros óptimos encontrados"):
     hp["mejores_hiperparametros"] = hp["mejores_hiperparametros"].astype(str)
     st.dataframe(hp, hide_index=True, width="stretch")
 st.caption(f"Versiones: {', '.join(f'{k} {v}' for k, v in meta['versiones'].items())} · Entrenado: {meta['fecha_entrenamiento']}")
-
-footer()

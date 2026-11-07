@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # carpeta app/ (utils.py)
-from utils import (footer, page_header, section, C_NO, PLOTLY_LAYOUT, PRIORITY_COLORS, RISK_COLORS,  # noqa: E402
+from utils import (page_header, section, C_NO, PLOTLY_LAYOUT, PRIORITY_COLORS, RISK_COLORS,  # noqa: E402
                    load_models, load_scored, sidebar_info)
 
 meta, _, _ = load_models()
@@ -21,12 +21,12 @@ NIVELES = ["Bajo", "Medio", "Alto"]
 page_header("monitoring", "Dashboard de clientes en riesgo",
             "Visión de toda la cartera: quién está en riesgo, cuánto ingreso está en juego y por qué. "
             "Usa los filtros para enfocar la campaña de retención y descarga la lista de clientes.",
-            chips=[f"Umbral de decisión {THR:.0%}", f"Riesgo alto ≥ {HIGH:.0%}", "Matriz riesgo × valor"])
+            chips=["Filtros por segmento", "Matriz riesgo × valor", "Lista de campaña descargable"])
 
 # -----------------------------------------------------
 # Filtros (una sola fila)
 # -----------------------------------------------------
-f1, f2, f3, f4, f5 = st.columns([1.1, 1, 1, 1, 1.2])
+f1, f2, f3, f4, f5 = st.container(key="filtros").columns([1.1, 1, 1, 1, 1.2])
 solo_activos = f1.toggle("Solo clientes activos", value=True,
                          help="Excluye a los clientes que ya abandonaron (Churn = Yes en el histórico)")
 contrato = f2.multiselect("Contrato", sorted(data.Contract.unique()), placeholder="Todos")
@@ -49,7 +49,7 @@ if df.empty:
 # KPIs
 # -----------------------------------------------------
 alto = df[df.NivelRiesgo == "Alto"]
-k1, k2, k3, k4, k5 = st.columns(5)
+k1, k2, k3, k4, k5 = st.container(key="kpis_dash").columns(5)
 k1.metric("Clientes", f"{len(df):,}")
 k2.metric(":material/error: Riesgo alto", f"{len(alto):,}", help=f"{len(alto) / len(df):.1%} de los clientes filtrados")
 k3.metric(":material/warning: Riesgo medio", f"{(df.NivelRiesgo == 'Medio').sum():,}")
@@ -141,5 +141,3 @@ st.download_button(f"Descargar lista de campaña ({len(lista):,} clientes en rie
 st.caption("Las probabilidades de la cartera completa se calcularon con el modelo en producción. "
            "Para los clientes del conjunto de entrenamiento son estimaciones dentro de la muestra; "
            "el desempeño honesto del modelo se reporta en la página «Desempeño de modelos» (conjunto de prueba).")
-
-footer()
