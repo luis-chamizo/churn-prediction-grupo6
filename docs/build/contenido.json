@@ -639,7 +639,7 @@
   },
   {
    "type": "p",
-   "text": "El *pipeline* final se serializó con *joblib* junto con un archivo de metadatos (umbrales, métricas y versiones). La aplicación web se desarrolló en **Streamlit** [16] y reutiliza el mismo módulo de preprocesamiento del entrenamiento, lo que garantiza que los datos nuevos se transformen exactamente igual. Puede ejecutarse localmente, publicarse gratis en Streamlit Community Cloud desde un repositorio de GitHub, o desplegarse en cualquier servicio de contenedores con el *Dockerfile* incluido. La aplicación tiene cinco módulos:"
+   "text": "El *pipeline* final se serializó con *joblib* junto con un archivo de metadatos (umbrales, métricas y versiones). La aplicación web se desarrolló en **Streamlit** [16] y reutiliza el mismo módulo de preprocesamiento del entrenamiento, lo que garantiza que los datos nuevos se transformen exactamente igual. Puede ejecutarse localmente, publicarse gratis en Streamlit Community Cloud desde un repositorio de GitHub, o desplegarse en cualquier servicio de contenedores con el *Dockerfile* incluido. La aplicación está publicada en **https://churn-prediction-grupo6.streamlit.app** y el código fuente en **https://github.com/luis-chamizo/churn-prediction-grupo6**. Tiene cinco módulos:"
   },
   {
    "type": "bullets",

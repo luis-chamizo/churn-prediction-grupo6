@@ -3,6 +3,10 @@
 **Proyecto Final #1 – Minería de Datos (metodología CRISP-DM)**
 **Grupo 6:** Luis Mario Chamizo Tiafi · Juan Diego Chamizo Tiafi
 
+**Fundación Universitaria de Popayán** – Especialización en Data Analytics para Marketing Digital · Docente: PhD. Cristian Camilo Ordoñez Quintero
+
+🌐 **Aplicación desplegada:** https://churn-prediction-grupo6.streamlit.app
+
 Sistema de predicción de abandono de clientes de telecomunicaciones que:
 - compara **5 modelos de machine learning** (Regresión Logística, Random Forest, XGBoost, LightGBM, Red Neuronal MLP) y un **Stacking** adicional;
 - usa **feature engineering RFM** adaptado a suscripciones y otras 16 variables derivadas;

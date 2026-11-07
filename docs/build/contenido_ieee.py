@@ -360,7 +360,8 @@ p("El *pipeline* final se serializó con *joblib* junto con un archivo de metada
   "aplicación web se desarrolló en **Streamlit** [16] y reutiliza el mismo módulo de preprocesamiento del entrenamiento, lo que "
   "garantiza que los datos nuevos se transformen exactamente igual. Puede ejecutarse localmente, publicarse gratis en Streamlit "
   "Community Cloud desde un repositorio de GitHub, o desplegarse en cualquier servicio de contenedores con el *Dockerfile* incluido. "
-  "La aplicación tiene cinco módulos:")
+  "La aplicación está publicada en **https://churn-prediction-grupo6.streamlit.app** y el código fuente en "
+  "**https://github.com/luis-chamizo/churn-prediction-grupo6**. Tiene cinco módulos:")
 bul(["**Predicción individual:** formulario (o selección de un cliente existente) que devuelve la probabilidad de *churn*, el nivel "
      f"de riesgo (Bajo < {num(THR, 2)} ≤ Medio < {num(HIGH, 2)} ≤ Alto), la explicación SHAP, las recomendaciones y un simulador.",
      "**Predicción por lotes:** carga de un CSV, validación de columnas y descarga de los resultados.",
