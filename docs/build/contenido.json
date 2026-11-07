@@ -1,0 +1,730 @@
+{
+ "title": "Churn Prediction Inteligente: modelo predictivo explicable para la retención de clientes de telecomunicaciones con CRISP-DM",
+ "authors": [
+  "Luis Mario Chamizo Tiafi",
+  "Juan Diego Chamizo Tiafi"
+ ],
+ "affiliation": [
+  "Fundación Universitaria de Popayán – Especialización en Data Analytics para Marketing Digital",
+  "Minería de Datos – Proyecto Final #1 (Grupo 6) · Docente: PhD. Cristian Camilo Ordoñez Quintero",
+  "Popayán, Colombia · Noviembre de 2026"
+ ],
+ "abstract": "El abandono de clientes (churn) reduce los ingresos recurrentes de las empresas de telecomunicaciones. Este trabajo presenta una solución de minería de datos, desarrollada con la metodología CRISP-DM, que predice qué clientes tienen alta probabilidad de abandono, explica por qué y recomienda acciones de retención personalizadas. Sobre el dataset Telco Customer Churn (7.043 clientes, 26,5 % de churn) se realizó un análisis exploratorio con pruebas de asociación, una adaptación del análisis RFM a suscripciones y la creación de 16 variables derivadas. Se compararon cinco modelos (Regresión Logística, Random Forest, XGBoost, LightGBM y una red neuronal MLP) y un ensamble Stacking, ajustados con búsqueda aleatoria y validación cruzada estratificada. En el conjunto de prueba, los modelos obtuvieron un ROC-AUC entre 0,834 y 0,848; el modelo desplegado (XGBoost) alcanzó ROC-AUC = 0,847, F1 = 0,634 y Recall = 0,775, y captura el 66,6 % de los abandonos contactando al 30 % de clientes de mayor riesgo. La explicabilidad con SHAP identificó como principales factores el tipo de contrato, la antigüedad, la fibra óptica y la ausencia de servicios de seguridad y soporte. La solución se desplegó en una aplicación web con predicción individual y por lotes, un dashboard de clientes en riesgo y un motor de recomendaciones ordenadas por su impacto SHAP.",
+ "keywords": "churn, minería de datos, CRISP-DM, aprendizaje automático, XGBoost, LightGBM, SHAP, RFM, retención de clientes.",
+ "blocks": [
+  {
+   "type": "h1",
+   "text": "Introducción"
+  },
+  {
+   "type": "p",
+   "text": "El abandono de clientes (*churn*) es uno de los indicadores más críticos en la industria de telecomunicaciones: los ingresos son recurrentes, los mercados están saturados y el costo de cambiar de proveedor para el usuario es bajo. Pequeñas mejoras en la retención producen aumentos desproporcionados en la rentabilidad [14], por lo que las empresas necesitan identificar **antes** de que ocurra qué clientes tienen mayor probabilidad de cancelar el servicio y, sobre todo, **por qué**, para diseñar acciones de retención focalizadas."
+  },
+  {
+   "type": "p",
+   "text": "Este trabajo presenta una solución completa de minería de datos para la predicción inteligente de *churn*, desarrollada con la metodología CRISP-DM [1] sobre el dataset público *Telco Customer Churn* de IBM [12]. Las contribuciones son: (i) un análisis exploratorio con pruebas estadísticas de asociación; (ii) una adaptación del análisis RFM [11] al contexto de suscripciones y 16 variables derivadas; (iii) la comparación rigurosa de cinco algoritmos, Regresión Logística, Random Forest, XGBoost, LightGBM y una red neuronal MLP, más un ensamble *Stacking*; (iv) la explicación global y local del modelo con SHAP [5], [6]; y (v) el despliegue en una aplicación web con dashboard de clientes en riesgo y un motor de recomendaciones de retención personalizadas guiado por la explicabilidad."
+  },
+  {
+   "type": "p",
+   "text": "El resto del documento sigue las seis fases de CRISP-DM: la Sección II resume trabajos relacionados; las Secciones III a VIII describen la comprensión del negocio, la comprensión de los datos, la preparación, el modelado, la evaluación y el despliegue; y la Sección IX presenta las conclusiones."
+  },
+  {
+   "type": "h1",
+   "text": "Trabajos relacionados"
+  },
+  {
+   "type": "p",
+   "text": "La predicción de *churn* en telecomunicaciones se ha abordado con árboles de decisión, regresión logística, redes neuronales y ensambles. Verbeke *et al.* [9] compararon numerosos clasificadores y propusieron evaluar los modelos con criterios de rentabilidad, no solo de exactitud. Burez y Van den Poel [10] mostraron que el desbalance de clases es un problema central y que el AUC es una métrica más adecuada que el *accuracy*. Los ensambles basados en árboles, *bagging* con Random Forest [2] y *boosting* con XGBoost [3] y LightGBM [4], son el estado del arte en datos tabulares, mientras que el *stacking* [7] combina modelos heterogéneos. Para la explicabilidad, SHAP [5] unifica varios métodos aditivos de atribución con base en los valores de Shapley, y TreeSHAP [6] los calcula de forma exacta y eficiente en modelos de árboles. Este trabajo integra estas líneas en un flujo reproducible que va de los datos a las decisiones."
+  },
+  {
+   "type": "h1",
+   "text": "Fase 1: Comprensión del negocio"
+  },
+  {
+   "type": "h2",
+   "text": "Objetivos de negocio"
+  },
+  {
+   "type": "bullets",
+   "items": [
+    "Identificar a los clientes con alta probabilidad de abandono.",
+    "Comprender los factores de comportamiento, contrato, servicios y facturación asociados al abandono.",
+    "Priorizar la inversión en retención según el **riesgo** y el **valor** del cliente.",
+    "Proponer acciones de retención **personalizadas** para cada cliente."
+   ]
+  },
+  {
+   "type": "h2",
+   "text": "Objetivos de minería de datos y criterios de éxito"
+  },
+  {
+   "type": "p",
+   "text": "El problema se formula como una **clasificación binaria supervisada** (Churn = 1 si el cliente abandonó). Los criterios de éxito se fijaron *antes* del modelado (Tabla I). El supuesto económico para la evaluación de negocio es: costo de contacto e incentivo de USD 50 por cliente, tasa de éxito de la campaña del 35 % y valor recuperado igual a 12 meses del cargo mensual."
+  },
+  {
+   "type": "table",
+   "caption": "Criterios de éxito del proyecto",
+   "rows": [
+    [
+     "Tipo",
+     "Criterio"
+    ],
+    [
+     "Minería",
+     "ROC-AUC ≥ 0,84 en el conjunto de prueba"
+    ],
+    [
+     "Minería",
+     "Recall de la clase *churn* ≥ 0,70"
+    ],
+    [
+     "Negocio",
+     "Top 30 % de riesgo captura ≥ 60 % del *churn*"
+    ],
+    [
+     "Despliegue",
+     "App web con predicción, dashboard y recomendaciones"
+    ]
+   ],
+   "widths": [
+    0.28,
+    0.72
+   ],
+   "note": null
+  },
+  {
+   "type": "h2",
+   "text": "Plan del proyecto"
+  },
+  {
+   "type": "p",
+   "text": "Herramientas: Python 3, pandas, scikit-learn [8], XGBoost, LightGBM, SHAP y Streamlit [16]. Todo el proceso es reproducible (semilla 42) y está encapsulado en un notebook ejecutable y en un módulo común (*src/features.py*) compartido por el entrenamiento y la aplicación web."
+  },
+  {
+   "type": "h1",
+   "text": "Fase 2: Comprensión de los datos"
+  },
+  {
+   "type": "h2",
+   "text": "Descripción y calidad"
+  },
+  {
+   "type": "p",
+   "text": "El dataset contiene **7.043 clientes** y 21 columnas: datos demográficos (género, adulto mayor, pareja, dependientes), servicios contratados (telefonía, múltiples líneas, internet DSL o fibra, seguridad, respaldo, protección, soporte, streaming), cuenta (antigüedad o *tenure*, contrato, facturación electrónica, método de pago, cargos mensual y total) y la variable objetivo. La tasa de abandono es de **26,5 %** (1.869 clientes), es decir, las clases están desbalanceadas en una proporción de aproximadamente 1:2,8."
+  },
+  {
+   "type": "p",
+   "text": "La verificación de calidad no encontró valores nulos explícitos ni registros o identificadores duplicados. Sin embargo, *TotalCharges* está almacenada como texto y contiene **11 cadenas vacías**. Todas corresponden a clientes con *tenure* = 0 (recién incorporados y aún no facturados), por lo que no son datos perdidos al azar: su valor correcto es 0. Además, *SeniorCitizen* está codificada como 0/1, a diferencia del resto de variables binarias (Yes/No)."
+  },
+  {
+   "type": "h2",
+   "text": "Exploración y análisis de comportamiento"
+  },
+  {
+   "type": "p",
+   "text": "Los clientes que abandonan tienen una antigüedad mediana de **10 meses**, frente a 38 de los que permanecen, y un cargo mensual mediano mayor (USD 79,7 frente a 64,4) (Fig. 1). La Fig. 2 muestra los patrones de comportamiento más marcados: el contrato **mes a mes** presenta 42,7 % de *churn*, frente a 11,3 % (1 año) y 2,8 % (2 años); la **fibra óptica**, 41,9 %; el pago con **cheque electrónico**, 45,3 %, frente a 16,0 % con pago automático; la ausencia de **seguridad en línea**, 41,8 %; y los **adultos mayores**, 41,7 %. El género y el servicio telefónico prácticamente no se asocian con el abandono."
+  },
+  {
+   "type": "widefig",
+   "src": "../../reports/figures/02_numericas_vs_churn.png",
+   "caption": "Distribución (densidad) de antigüedad, cargo mensual y cargo total según el estado de churn. Los clientes que abandonan se concentran en los primeros meses y en cargos mensuales altos.",
+   "scale": 0.92
+  },
+  {
+   "type": "fig",
+   "src": "../../reports/figures/doc_churn_variables_clave.png",
+   "caption": "Tasa de churn por categoría en seis variables clave. Línea punteada: tasa global; naranja: categorías por encima del promedio.",
+   "scale": 1
+  },
+  {
+   "type": "table",
+   "caption": "Asociación con el churn (prueba de hipótesis)",
+   "rows": [
+    [
+     "Variable",
+     "Prueba",
+     "Efecto",
+     "p-valor"
+    ],
+    [
+     "Antigüedad (meses)",
+     "M-W U",
+     "0,480",
+     "< 0,001"
+    ],
+    [
+     "Tipo de contrato",
+     "χ²",
+     "0,410",
+     "< 0,001"
+    ],
+    [
+     "Seguridad en línea",
+     "χ²",
+     "0,347",
+     "< 0,001"
+    ],
+    [
+     "Soporte técnico",
+     "χ²",
+     "0,343",
+     "< 0,001"
+    ],
+    [
+     "Tipo de internet",
+     "χ²",
+     "0,322",
+     "< 0,001"
+    ],
+    [
+     "Método de pago",
+     "χ²",
+     "0,303",
+     "< 0,001"
+    ],
+    [
+     "Cargo total acumulado",
+     "M-W U",
+     "0,301",
+     "< 0,001"
+    ],
+    [
+     "Respaldo en línea",
+     "χ²",
+     "0,292",
+     "< 0,001"
+    ]
+   ],
+   "widths": [
+    0.42,
+    0.18,
+    0.18,
+    0.22
+   ],
+   "note": "Efecto: V de Cramér (χ²) o correlación biserial de rangos (Mann-Whitney U). Top 8 de 19 variables."
+  },
+  {
+   "type": "p",
+   "text": "Para cuantificar estas relaciones se aplicaron pruebas χ² con V de Cramér a las variables categóricas y la prueba de Mann-Whitney U a las numéricas (Tabla II). Las asociaciones más fuertes corresponden a **Antigüedad (meses)**, **Tipo de contrato** y **Seguridad en línea**. Además, *TotalCharges* está fuertemente correlacionada con *tenure* (ρ de Spearman ≈ 0,89), redundancia que motiva una variable derivada de gasto promedio."
+  },
+  {
+   "type": "h1",
+   "text": "Fase 3: Preparación de los datos"
+  },
+  {
+   "type": "h2",
+   "text": "Limpieza y partición"
+  },
+  {
+   "type": "p",
+   "text": "*TotalCharges* se convirtió a numérica e imputó con 0 en los 11 casos de *tenure* = 0; se eliminaron espacios en los textos, *Churn* se codificó como 0/1 y *customerID* se excluyó del modelado. Los datos se dividieron en **80 % de entrenamiento (5.634) y 20 % de prueba (1.409)** de forma estratificada **antes** de cualquier transformación aprendida, para evitar fuga de información."
+  },
+  {
+   "type": "h2",
+   "text": "Ingeniería de características: RFM adaptado"
+  },
+  {
+   "type": "p",
+   "text": "El análisis RFM (*Recency, Frequency, Monetary*) [11] se adaptó a un servicio de suscripción: **R** (relación) = antigüedad en meses; **F** (frecuencia de uso) = número de servicios contratados; **M** (monetario) = cargo mensual. Cada componente se discretiza en un puntaje de 1 a 5 según los quintiles q_k aprendidos *solo* con el entrenamiento:"
+  },
+  {
+   "type": "eq",
+   "text": "s(x) = 1 + Σ_k 1[x > q_k],   RFM = s_R + s_F + s_M",
+   "n": 1
+  },
+  {
+   "type": "p",
+   "text": "Con los puntajes se definieron cinco segmentos: *Campeones* (R ≥ 4 y F ≥ 4), *Leales* (R ≥ 4), *Alto valor en riesgo* (R ≤ 2 y M ≥ 4), *Nuevos de bajo compromiso* (R ≤ 2 y F ≤ 2) y *Potenciales*. Como muestra la Fig. 3, los segmentos discriminan fuertemente el riesgo: *Alto valor en riesgo* tiene 66,3 % de *churn*, frente a 8,6 % en *Leales*."
+  },
+  {
+   "type": "widefig",
+   "src": "../../reports/figures/05_segmentos_rfm.png",
+   "caption": "Izquierda: tasa de churn por segmento RFM (entrenamiento). Derecha: tasa de churn por combinación de puntajes R (antigüedad) y F (servicios).",
+   "scale": 0.92
+  },
+  {
+   "type": "table",
+   "caption": "Variables derivadas (feature engineering)",
+   "rows": [
+    [
+     "Variable",
+     "Definición"
+    ],
+    [
+     "NumServicios",
+     "Servicios contratados (0-9)"
+    ],
+    [
+     "NumProteccion",
+     "Seguridad, respaldo, protección y soporte"
+    ],
+    [
+     "GastoPromedioMensual",
+     "TotalCharges / tenure"
+    ],
+    [
+     "VariacionTarifa",
+     "MonthlyCharges − gasto promedio"
+    ],
+    [
+     "CargoPorServicio",
+     "MonthlyCharges / (servicios + 1)"
+    ],
+    [
+     "DuracionContratoMeses",
+     "1, 12 o 24 según el contrato"
+    ],
+    [
+     "PagoAutomatico",
+     "1 si el pago es automático"
+    ],
+    [
+     "TieneFamilia",
+     "Pareja o dependientes"
+    ],
+    [
+     "FibraSinProteccion",
+     "Fibra sin seguridad ni soporte"
+    ],
+    [
+     "GrupoAntiguedad",
+     "Tramos 0-12, 13-24, 25-48, 49-72 m"
+    ],
+    [
+     "R, F, M, RFM, Segmento",
+     "Puntajes y segmento RFM"
+    ]
+   ],
+   "widths": [
+    0.45,
+    0.55
+   ],
+   "note": null
+  },
+  {
+   "type": "p",
+   "text": "La información mutua con la variable objetivo (Fig. 4) confirma el valor del *feature engineering*: varias variables derivadas, como la duración del contrato, el puntaje R, el segmento RFM o la fibra sin protección, aparecen entre las más informativas."
+  },
+  {
+   "type": "fig",
+   "src": "../../reports/figures/06_informacion_mutua.png",
+   "caption": "Top 20 variables por información mutua con el churn. En naranja, variables creadas en la ingeniería de características.",
+   "scale": 0.95
+  },
+  {
+   "type": "h2",
+   "text": "Transformación"
+  },
+  {
+   "type": "p",
+   "text": "Las variables numéricas se estandarizaron y las categóricas se codificaron con *one-hot* (descartando una categoría en las binarias), lo que produjo 63 columnas. Todo el flujo se encapsuló en un *Pipeline* de scikit-learn (FeatureEngineer → ColumnTransformer → modelo), de modo que en cada pliegue de validación se reaprenden los cortes RFM y el escalado, y en producción basta con entregar los datos crudos. El desbalance se trató con **ajuste del umbral de decisión** sobre predicciones *out-of-fold*, que preserva probabilidades bien calibradas para el dashboard de riesgo."
+  },
+  {
+   "type": "h1",
+   "text": "Fase 4: Modelado"
+  },
+  {
+   "type": "h2",
+   "text": "Técnicas"
+  },
+  {
+   "type": "p",
+   "text": "Se implementaron los cinco modelos requeridos: **Regresión Logística** [18] con regularización L1/L2, como línea base interpretable; **Random Forest** [2], ensamble de *bagging* que reduce la varianza promediando árboles descorrelacionados; **XGBoost** [3], *boosting* por gradiente de segundo orden con regularización; **LightGBM** [4], *boosting* con crecimiento por hojas e histogramas; y una **red neuronal MLP** [17] con parada temprana. Adicionalmente se construyó un **Stacking** [7] que combina los cinco modelos ajustados mediante un meta-modelo logístico entrenado sobre sus probabilidades *out-of-fold*."
+  },
+  {
+   "type": "h2",
+   "text": "Diseño de la prueba y ajuste de hiperparámetros"
+  },
+  {
+   "type": "p",
+   "text": "Cada modelo se ajustó con búsqueda aleatoria [13] (15-25 configuraciones) y **validación cruzada estratificada de 5 pliegues**, con ROC-AUC como métrica de optimización por ser independiente del umbral y robusta al desbalance [10], [15]. La Tabla IV resume las configuraciones óptimas."
+  },
+  {
+   "type": "table",
+   "caption": "Hiperparámetros óptimos (búsqueda aleatoria, CV 5 pliegues)",
+   "rows": [
+    [
+     "Modelo",
+     "Hiperparámetros óptimos",
+     "AUC CV"
+    ],
+    [
+     "Reg. Logística",
+     "C=0,126, pen=l1",
+     "0,846"
+    ],
+    [
+     "Random Forest",
+     "depth=None, max_feat=sqrt, min_leaf=19, n_est=258",
+     "0,847"
+    ],
+    [
+     "XGBoost",
+     "colsample=0,570, γ=1,209, lr=0,050, depth=2, min_cw=4, n_est=162, λ=0,150, subsample=0,716",
+     "0,850"
+    ],
+    [
+     "LightGBM",
+     "colsample=0,637, lr=0,054, min_cs=56, n_est=280, leaves=4, λ=4,579, subsample=0,694",
+     "0,849"
+    ],
+    [
+     "MLP",
+     "act=tanh, α=0,029, capas=(64,), lr=0,002",
+     "0,845"
+    ]
+   ],
+   "widths": [
+    0.22,
+    0.6,
+    0.18
+   ],
+   "note": null
+  },
+  {
+   "type": "widefig",
+   "src": "../../reports/figures/07_validacion_cruzada.png",
+   "caption": "Distribución de Accuracy, F1 y ROC-AUC en los 5 pliegues de validación cruzada (umbral 0,5) para los seis modelos.",
+   "scale": 0.95
+  },
+  {
+   "type": "p",
+   "text": "La Fig. 5 muestra que, en validación cruzada, todos los modelos alcanzan un ROC-AUC similar (entre 0,845 y 0,850), con *Stacking* en primer lugar. Con el umbral por defecto de 0,5 el F1 de la clase *churn* es moderado, lo que justifica optimizar el umbral."
+  },
+  {
+   "type": "h1",
+   "text": "Fase 5: Evaluación"
+  },
+  {
+   "type": "h2",
+   "text": "Métricas"
+  },
+  {
+   "type": "p",
+   "text": "Sean TP, TN, FP y FN los verdaderos y falsos positivos y negativos. Se reportan *Accuracy* = (TP+TN)/N, *Precision* = TP/(TP+FP), *Recall* = TP/(TP+FN), F1 (2), el área bajo la curva ROC (ROC-AUC) [15], el área bajo la curva Precision-Recall (PR-AUC) y la puntuación de Brier, que mide la calibración de las probabilidades."
+  },
+  {
+   "type": "eq",
+   "text": "F1 = 2 · Precision · Recall / (Precision + Recall)",
+   "n": 2
+  },
+  {
+   "type": "p",
+   "text": "Para cada modelo se eligió el umbral que maximiza F1 sobre las predicciones *out-of-fold* del entrenamiento, sin usar el conjunto de prueba. La Tabla V presenta los resultados en los datos de prueba, que nunca se vieron durante el entrenamiento."
+  },
+  {
+   "type": "table",
+   "caption": "Desempeño en el conjunto de prueba (umbral óptimo por modelo)",
+   "rows": [
+    [
+     "Modelo",
+     "Umb.",
+     "Acc.",
+     "Prec.",
+     "Rec.",
+     "F1",
+     "AUC",
+     "PR-AUC"
+    ],
+    [
+     "LightGBM",
+     "0,28",
+     "0,756",
+     "0,527",
+     "0,781",
+     "0,629",
+     "0,848",
+     "0,664"
+    ],
+    [
+     "Stacking",
+     "0,27",
+     "0,774",
+     "0,556",
+     "0,735",
+     "0,633",
+     "0,848",
+     "0,659"
+    ],
+    [
+     "**XGBoost**",
+     "0,30",
+     "0,762",
+     "0,536",
+     "0,775",
+     "0,634",
+     "0,847",
+     "0,664"
+    ],
+    [
+     "Reg. Log.",
+     "0,33",
+     "0,769",
+     "0,549",
+     "0,725",
+     "0,624",
+     "0,846",
+     "0,646"
+    ],
+    [
+     "R. Forest",
+     "0,37",
+     "0,779",
+     "0,571",
+     "0,682",
+     "0,621",
+     "0,845",
+     "0,654"
+    ],
+    [
+     "MLP",
+     "0,34",
+     "0,770",
+     "0,552",
+     "0,714",
+     "0,622",
+     "0,834",
+     "0,623"
+    ]
+   ],
+   "widths": [
+    0.2,
+    0.1,
+    0.115,
+    0.115,
+    0.115,
+    0.115,
+    0.115,
+    0.115
+   ],
+   "note": "n = 1.409; ordenado por ROC-AUC. En negrita, el modelo desplegado."
+  },
+  {
+   "type": "widefig",
+   "src": "../../reports/figures/08_curvas_roc_pr.png",
+   "caption": "Curvas ROC (izquierda) y Precision-Recall (derecha) de los seis modelos en el conjunto de prueba.",
+   "scale": 0.9
+  },
+  {
+   "type": "p",
+   "text": "Las diferencias entre modelos son pequeñas: el ROC-AUC en prueba varía entre 0,834 y 0,848 (Fig. 6), y *LightGBM* obtiene el mayor valor. Este resultado es coherente con la literatura sobre este dataset: la señal está dominada por pocas variables con relaciones casi monótonas (contrato, antigüedad, tipo de internet), que incluso un modelo lineal regularizado captura bien."
+  },
+  {
+   "type": "h2",
+   "text": "Selección del modelo final"
+  },
+  {
+   "type": "p",
+   "text": "La regla de selección se definió antes de observar el conjunto de prueba: (1) mayor ROC-AUC promedio en validación cruzada; (2) si la diferencia con el mejor es menor que 0,003, valor inferior a la desviación estándar entre pliegues, se prefiere el modelo que admite explicaciones SHAP exactas (árboles o lineal) por parsimonia y velocidad de inferencia. Con esta regla se seleccionó **XGBoost**, con ROC-AUC en prueba de **0,847** (IC 95 % por *bootstrap*: [0,824; 0,867]), Recall de **0,775** y F1 de **0,634** con umbral 0,30. Su matriz de confusión (Fig. 7) muestra que detecta 290 de 374 clientes que abandonan, a costa de 251 falsas alarmas sobre 1035 clientes que permanecen."
+  },
+  {
+   "type": "widefig",
+   "src": "../../reports/figures/09_matrices_confusion.png",
+   "caption": "Matrices de confusión en el conjunto de prueba con el umbral óptimo de cada modelo.",
+   "scale": 0.8
+  },
+  {
+   "type": "h2",
+   "text": "Evaluación orientada al negocio"
+  },
+  {
+   "type": "p",
+   "text": "La curva de ganancia acumulada (Fig. 8) indica que contactando al **20 %** de clientes con mayor riesgo se captura el **50,5 %** de los abandonos (*lift* = 2,53) y con el **30 %**, el **66,6 %** (*lift* = 2,22). Bajo los supuestos económicos de la Fase 1, la campaña dirigida con el umbral F1 generaría un beneficio neto de **USD 63.939** sobre los 1.409 clientes de prueba; el umbral que maximiza el beneficio es 0,18 (USD 67.664), como se ve en la Fig. 9. Esto confirma que el umbral debe ajustarse al costo real de cada campaña, y la aplicación permite hacerlo."
+  },
+  {
+   "type": "fig",
+   "src": "../../reports/figures/11_curva_ganancia.png",
+   "caption": "Curva de ganancia acumulada del modelo final frente a una selección aleatoria (prueba).",
+   "scale": 0.95
+  },
+  {
+   "type": "fig",
+   "src": "../../reports/figures/12_costo_beneficio.png",
+   "caption": "Beneficio neto simulado de la campaña de retención según el umbral de decisión.",
+   "scale": 0.95
+  },
+  {
+   "type": "h2",
+   "text": "Interpretabilidad con SHAP"
+  },
+  {
+   "type": "p",
+   "text": "SHAP [5] descompone cada predicción como la suma de un valor base y las contribuciones φ_j de cada variable, con base en los valores de Shapley de la teoría de juegos:"
+  },
+  {
+   "type": "eq",
+   "text": "f(x) = φ₀ + Σⱼ φⱼ(x)",
+   "n": 3
+  },
+  {
+   "type": "p",
+   "text": "Para el modelo final se usó TreeSHAP [6] (contribuciones en log-odds). Las contribuciones de las columnas *one-hot* se **sumaron** por variable original para facilitar la lectura. La importancia global (Fig. 10) ubica en los primeros lugares a **Duración contrato (meses)**, **Antigüedad (meses)**, **Cargo por servicio** y **Método de pago**, seguidos de tipo de contrato y seguridad en línea. El gráfico *beeswarm* (Fig. 11) muestra la dirección de los efectos: el contrato mes a mes, la antigüedad baja, la fibra óptica y la falta de seguridad o soporte aumentan el riesgo, mientras que los contratos largos lo reducen."
+  },
+  {
+   "type": "fig",
+   "src": "../../reports/figures/14_shap_importancia_global.png",
+   "caption": "Importancia global SHAP (media del valor absoluto) agregada por variable original.",
+   "scale": 0.92
+  },
+  {
+   "type": "fig",
+   "src": "../../reports/figures/13_shap_beeswarm.png",
+   "caption": "Gráfico beeswarm de SHAP en el conjunto de prueba. Cada punto es un cliente; el color indica el valor de la variable (azul bajo, naranja alto).",
+   "scale": 0.95
+  },
+  {
+   "type": "p",
+   "text": "Los gráficos de dependencia (Fig. 12) revelan efectos **no lineales**: el riesgo asociado a la antigüedad es muy alto en los primeros meses y cae marcadamente después del primer año, y su magnitud depende del tipo de contrato. A nivel individual (Fig. 13), SHAP identifica los factores concretos que llevan a un cliente a una probabilidad alta, que es exactamente la información que necesita el equipo de retención."
+  },
+  {
+   "type": "widefig",
+   "src": "../../reports/figures/15_shap_dependencia.png",
+   "caption": "Gráficos de dependencia SHAP para antigüedad, cargo mensual y variación de tarifa. Color: tipo de contrato (naranja = mes a mes).",
+   "scale": 0.95
+  },
+  {
+   "type": "fig",
+   "src": "../../reports/figures/16_shap_local_alto.png",
+   "caption": "Explicación local SHAP del cliente de mayor riesgo del conjunto de prueba (10 factores principales).",
+   "scale": 1
+  },
+  {
+   "type": "h2",
+   "text": "Verificación de criterios de éxito"
+  },
+  {
+   "type": "table",
+   "caption": "Cumplimiento de los criterios de éxito",
+   "rows": [
+    [
+     "Criterio",
+     "Resultado",
+     "¿Cumple?"
+    ],
+    [
+     "ROC-AUC ≥ 0,84",
+     "0,847",
+     "Sí"
+    ],
+    [
+     "Recall ≥ 0,70",
+     "0,775",
+     "Sí"
+    ],
+    [
+     "Top 30 % capta ≥ 60 %",
+     "66,6 %",
+     "Sí"
+    ],
+    [
+     "App web desplegable",
+     "Streamlit (Sec. VIII)",
+     "Sí"
+    ]
+   ],
+   "widths": [
+    0.45,
+    0.33,
+    0.22
+   ],
+   "note": null
+  },
+  {
+   "type": "h1",
+   "text": "Fase 6: Despliegue"
+  },
+  {
+   "type": "h2",
+   "text": "Arquitectura"
+  },
+  {
+   "type": "p",
+   "text": "El *pipeline* final se serializó con *joblib* junto con un archivo de metadatos (umbrales, métricas y versiones). La aplicación web se desarrolló en **Streamlit** [16] y reutiliza el mismo módulo de preprocesamiento del entrenamiento, lo que garantiza que los datos nuevos se transformen exactamente igual. Puede ejecutarse localmente, publicarse gratis en Streamlit Community Cloud desde un repositorio de GitHub, o desplegarse en cualquier servicio de contenedores con el *Dockerfile* incluido. La aplicación tiene cinco módulos:"
+  },
+  {
+   "type": "bullets",
+   "items": [
+    "**Predicción individual:** formulario (o selección de un cliente existente) que devuelve la probabilidad de *churn*, el nivel de riesgo (Bajo < 0,30 ≤ Medio < 0,60 ≤ Alto), la explicación SHAP, las recomendaciones y un simulador.",
+    "**Predicción por lotes:** carga de un CSV, validación de columnas y descarga de los resultados.",
+    "**Dashboard de riesgo:** KPIs, filtros, distribución del riesgo, matriz riesgo × valor, factores SHAP frecuentes y lista descargable de clientes para campañas.",
+    "**Desempeño de modelos:** comparación interactiva de métricas, curvas ROC, matrices de confusión e importancia SHAP.",
+    "**Inicio:** resumen del proyecto y de la metodología CRISP-DM."
+   ]
+  },
+  {
+   "type": "widefig",
+   "src": "../capturas/dashboard.png",
+   "caption": "Dashboard de clientes en riesgo de la aplicación web: KPIs, distribución de la probabilidad y matriz riesgo × valor para priorizar la retención.",
+   "scale": 0.85
+  },
+  {
+   "type": "h2",
+   "text": "Motor de recomendaciones de retención"
+  },
+  {
+   "type": "p",
+   "text": "Cada factor de riesgo accionable se asocia con una regla de negocio. Por ejemplo: contrato mes a mes → migración a contrato anual con descuento; antigüedad ≤ 12 meses → programa de bienvenida; sin seguridad en línea o soporte → prueba gratuita del servicio; fibra óptica → revisión técnica de la calidad; cheque electrónico → incentivo por pago automático; cargo ≥ USD 70 → optimización del plan. Lo distintivo es que las reglas activas se **ordenan por la contribución SHAP individual** de la variable asociada, de modo que a cada cliente se le propone primero la acción que ataca su principal factor de riesgo. Los clientes se priorizan además con una **matriz riesgo × valor** (pérdida esperada = probabilidad × 12 × cargo mensual)."
+  },
+  {
+   "type": "p",
+   "text": "El **simulador contrafactual** recalcula la probabilidad cambiando una sola variable para estimar el efecto de cada acción. Por ejemplo, para el cliente activo con mayor pérdida esperada (5150-ITWWB, probabilidad 86,4 %), migrar a contrato de un año reduce el riesgo a 63,6 % y activar la seguridad en línea, a 77,2 %. Estas estimaciones orientan la priorización, pero no constituyen un efecto causal garantizado."
+  },
+  {
+   "type": "widefig",
+   "src": "../capturas/prediccion.png",
+   "caption": "Módulo de predicción individual: explicación SHAP del cliente (naranja = aumenta el riesgo) y recomendaciones de retención ordenadas por su impacto SHAP.",
+   "scale": 0.85
+  },
+  {
+   "type": "h2",
+   "text": "Resultados sobre la cartera y plan de monitoreo"
+  },
+  {
+   "type": "p",
+   "text": "Al puntuar a los 5.174 clientes activos, el modelo identifica **248 en riesgo alto** y 949 en riesgo medio, con una pérdida anual esperada total de **USD 803.487**. El segmento prioritario *Retener ya* (alto riesgo y alto valor) agrupa a 782 clientes que concentran USD 415.496 de esa pérdida esperada. Para el mantenimiento se propone: monitoreo mensual del *drift* con el índice PSI (alerta si PSI > 0,2), contraste mensual de las predicciones con los abandonos reales (reentrenar si el ROC-AUC baja de 0,80), pruebas A/B con grupo de control para medir el efecto real de las campañas y reentrenamiento trimestral ejecutando el notebook reproducible."
+  },
+  {
+   "type": "h1",
+   "text": "Conclusiones"
+  },
+  {
+   "type": "p",
+   "text": "Se desarrolló una solución completa de predicción de *churn* siguiendo las seis fases de CRISP-DM. Los cinco modelos requeridos y el *Stacking* alcanzaron un desempeño alto y muy similar (ROC-AUC en prueba entre 0,834 y 0,848). El modelo desplegado, XGBoost, cumple los criterios de éxito definidos (ROC-AUC = 0,847, Recall = 0,775) y permite capturar el 66,6 % de los abandonos contactando solo al 30 % de los clientes."
+  },
+  {
+   "type": "p",
+   "text": "El análisis de comportamiento y SHAP coinciden en que el abandono se explica sobre todo por la **falta de compromiso contractual** (contrato mes a mes y baja antigüedad), por la **relación precio-servicio** (fibra óptica y cargos altos) y por la **ausencia de servicios de protección y soporte**. Todos son factores accionables. La adaptación RFM aportó variables con alto poder discriminante y una segmentación fácil de comunicar al negocio."
+  },
+  {
+   "type": "p",
+   "text": "Como trabajo futuro se propone: incorporar datos temporales de uso y de interacciones con el servicio al cliente; modelar el *uplift* de cada acción con experimentos controlados; calibrar el umbral con los costos reales de la empresa; y evaluar modelos de supervivencia para estimar *cuándo* abandonará cada cliente."
+  },
+  {
+   "type": "h1_nonum",
+   "text": "Referencias"
+  },
+  {
+   "type": "refs",
+   "items": [
+    "P. Chapman *et al.*, “CRISP-DM 1.0: Step-by-step data mining guide,” SPSS Inc., 2000.",
+    "L. Breiman, “Random forests,” *Machine Learning*, vol. 45, no. 1, pp. 5–32, 2001.",
+    "T. Chen and C. Guestrin, “XGBoost: A scalable tree boosting system,” in *Proc. 22nd ACM SIGKDD Int. Conf. Knowledge Discovery and Data Mining*, 2016, pp. 785–794.",
+    "G. Ke *et al.*, “LightGBM: A highly efficient gradient boosting decision tree,” in *Advances in Neural Information Processing Systems 30*, 2017, pp. 3146–3154.",
+    "S. M. Lundberg and S.-I. Lee, “A unified approach to interpreting model predictions,” in *Advances in Neural Information Processing Systems 30*, 2017, pp. 4765–4774.",
+    "S. M. Lundberg *et al.*, “From local explanations to global understanding with explainable AI for trees,” *Nature Machine Intelligence*, vol. 2, no. 1, pp. 56–67, 2020.",
+    "D. H. Wolpert, “Stacked generalization,” *Neural Networks*, vol. 5, no. 2, pp. 241–259, 1992.",
+    "F. Pedregosa *et al.*, “Scikit-learn: Machine learning in Python,” *J. Machine Learning Research*, vol. 12, pp. 2825–2830, 2011.",
+    "W. Verbeke, K. Dejaeger, D. Martens, J. Hur, and B. Baesens, “New insights into churn prediction in the telecommunication sector: A profit driven data mining approach,” *European J. Operational Research*, vol. 218, no. 1, pp. 211–229, 2012.",
+    "J. Burez and D. Van den Poel, “Handling class imbalance in customer churn prediction,” *Expert Systems with Applications*, vol. 36, no. 3, pp. 4626–4636, 2009.",
+    "A. M. Hughes, *Strategic Database Marketing*. Chicago, IL, USA: Probus Publishing, 1994.",
+    "BlastChar (IBM Sample Data Sets), “Telco Customer Churn,” Kaggle, 2018. [Online]. Available: https://www.kaggle.com/datasets/blastchar/telco-customer-churn",
+    "J. Bergstra and Y. Bengio, “Random search for hyper-parameter optimization,” *J. Machine Learning Research*, vol. 13, pp. 281–305, 2012.",
+    "F. F. Reichheld and W. E. Sasser, “Zero defections: Quality comes to services,” *Harvard Business Review*, vol. 68, no. 5, pp. 105–111, 1990.",
+    "T. Fawcett, “An introduction to ROC analysis,” *Pattern Recognition Letters*, vol. 27, no. 8, pp. 861–874, 2006.",
+    "Streamlit Inc., “Streamlit documentation.” [Online]. Available: https://docs.streamlit.io",
+    "D. E. Rumelhart, G. E. Hinton, and R. J. Williams, “Learning representations by back-propagating errors,” *Nature*, vol. 323, pp. 533–536, 1986.",
+    "D. R. Cox, “The regression analysis of binary sequences,” *J. Royal Statistical Society: Series B*, vol. 20, no. 2, pp. 215–242, 1958."
+   ]
+  }
+ ]
+}

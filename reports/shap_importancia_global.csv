@@ -1,0 +1,36 @@
+,mean_abs_shap
+Duración contrato (meses),0.5305
+Antigüedad (meses),0.3701
+Cargo por servicio,0.2595
+Método de pago,0.1614
+Tipo de contrato,0.1607
+Seguridad en línea,0.1471
+Múltiples líneas,0.1207
+Factura electrónica,0.1167
+Fibra sin protección,0.0889
+Cargo total acumulado,0.0872
+Gasto promedio mensual,0.082
+Tipo de internet,0.08
+N.º servicios de streaming,0.0763
+Cargo mensual,0.064
+Segmento RFM,0.0579
+Soporte técnico,0.0519
+Tiene dependientes,0.0443
+Streaming películas,0.0375
+Variación de tarifa,0.0354
+Respaldo en línea,0.031
+Adulto mayor,0.0308
+Puntaje R (antigüedad),0.0295
+Servicio telefónico,0.0199
+Streaming TV,0.0176
+Grupo de antigüedad,0.0161
+N.º de servicios,0.0071
+Pago automático,0.0046
+Puntaje RFM total,0.0045
+Puntaje M (gasto),0.0044
+Género,0.0024
+Tiene familia,0.0018
+N.º servicios de protección,0.0
+Protección de equipo,0.0
+Puntaje F (servicios),0.0
+Tiene pareja,0.0

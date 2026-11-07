@@ -1,0 +1,180 @@
+{
+  "proyecto": "Churn Prediction Inteligente – Grupo 6",
+  "integrantes": [
+    "Luis Mario Chamizo Tiafi",
+    "Juan Diego Chamizo Tiafi"
+  ],
+  "fecha_entrenamiento": "2026-11-07 12:52",
+  "modelo_final": "XGBoost",
+  "archivo_modelo_final": "modelo_final.joblib",
+  "archivos_modelos": {
+    "Regresión Logística": "regresion_logistica.joblib",
+    "Random Forest": "random_forest.joblib",
+    "XGBoost": "xgboost.joblib",
+    "LightGBM": "lightgbm.joblib",
+    "Red Neuronal (MLP)": "mlp.joblib",
+    "Stacking": "stacking.joblib"
+  },
+  "umbral_decision": 0.3,
+  "umbral_riesgo_alto": 0.6,
+  "umbral_beneficio_maximo": 0.18,
+  "corte_valor_alto": 844.2,
+  "umbrales_por_modelo": {
+    "Regresión Logística": 0.33,
+    "Random Forest": 0.37,
+    "XGBoost": 0.3,
+    "LightGBM": 0.28,
+    "Red Neuronal (MLP)": 0.34,
+    "Stacking": 0.27
+  },
+  "metricas_test": {
+    "LightGBM": {
+      "Accuracy": 0.7559,
+      "Precision": 0.5271,
+      "Recall": 0.7807,
+      "F1": 0.6293,
+      "ROC-AUC": 0.8483,
+      "PR-AUC": 0.6636,
+      "Brier": 0.1347,
+      "roc_auc_cv": 0.8487
+    },
+    "Stacking": {
+      "Accuracy": 0.7736,
+      "Precision": 0.5556,
+      "Recall": 0.7353,
+      "F1": 0.6329,
+      "ROC-AUC": 0.848,
+      "PR-AUC": 0.6587,
+      "Brier": 0.1362,
+      "roc_auc_cv": 0.85
+    },
+    "XGBoost": {
+      "Accuracy": 0.7622,
+      "Precision": 0.536,
+      "Recall": 0.7754,
+      "F1": 0.6339,
+      "ROC-AUC": 0.8466,
+      "PR-AUC": 0.6643,
+      "Brier": 0.1349,
+      "roc_auc_cv": 0.8497
+    },
+    "Regresión Logística": {
+      "Accuracy": 0.7686,
+      "Precision": 0.5486,
+      "Recall": 0.7246,
+      "F1": 0.6244,
+      "ROC-AUC": 0.8457,
+      "PR-AUC": 0.6456,
+      "Brier": 0.1362,
+      "roc_auc_cv": 0.8463
+    },
+    "Random Forest": {
+      "Accuracy": 0.7793,
+      "Precision": 0.5705,
+      "Recall": 0.6818,
+      "F1": 0.6212,
+      "ROC-AUC": 0.8454,
+      "PR-AUC": 0.6544,
+      "Brier": 0.1357,
+      "roc_auc_cv": 0.8472
+    },
+    "Red Neuronal (MLP)": {
+      "Accuracy": 0.77,
+      "Precision": 0.5517,
+      "Recall": 0.7139,
+      "F1": 0.6224,
+      "ROC-AUC": 0.8336,
+      "PR-AUC": 0.6226,
+      "Brier": 0.1443,
+      "roc_auc_cv": 0.8446
+    }
+  },
+  "auc_ic95_final": [
+    0.8243,
+    0.8672
+  ],
+  "captura_top30": 0.6658,
+  "busqueda_hiperparametros": [
+    {
+      "modelo": "Regresión Logística",
+      "roc_auc_cv": 0.8463,
+      "std": 0.0107,
+      "segundos": 107.7,
+      "mejores_hiperparametros": {
+        "C": 0.1256,
+        "penalty": "l1"
+      }
+    },
+    {
+      "modelo": "Random Forest",
+      "roc_auc_cv": 0.8472,
+      "std": 0.0108,
+      "segundos": 271.0,
+      "mejores_hiperparametros": {
+        "max_depth": null,
+        "max_features": "sqrt",
+        "min_samples_leaf": 19,
+        "n_estimators": 258
+      }
+    },
+    {
+      "modelo": "XGBoost",
+      "roc_auc_cv": 0.8497,
+      "std": 0.013,
+      "segundos": 373.1,
+      "mejores_hiperparametros": {
+        "colsample_bytree": 0.5697,
+        "gamma": 1.2088,
+        "learning_rate": 0.0504,
+        "max_depth": 2,
+        "min_child_weight": 4,
+        "n_estimators": 162,
+        "reg_lambda": 0.1504,
+        "subsample": 0.7159
+      }
+    },
+    {
+      "modelo": "LightGBM",
+      "roc_auc_cv": 0.8487,
+      "std": 0.0123,
+      "segundos": 310.2,
+      "mejores_hiperparametros": {
+        "colsample_bytree": 0.6374,
+        "learning_rate": 0.0537,
+        "min_child_samples": 56,
+        "n_estimators": 280,
+        "num_leaves": 4,
+        "reg_lambda": 4.5785,
+        "subsample": 0.6944,
+        "subsample_freq": 1
+      }
+    },
+    {
+      "modelo": "Red Neuronal (MLP)",
+      "roc_auc_cv": 0.8446,
+      "std": 0.0112,
+      "segundos": 160.0,
+      "mejores_hiperparametros": {
+        "activation": "tanh",
+        "alpha": 0.0292,
+        "hidden_layer_sizes": [
+          64
+        ],
+        "learning_rate_init": 0.0016
+      }
+    }
+  ],
+  "tasa_churn_base": 0.2654,
+  "n_train": 5634,
+  "n_test": 1409,
+  "shap_base_value": -1.024081826210022,
+  "shap_unidad": "log-odds",
+  "versiones": {
+    "python": "3.14.8",
+    "scikit-learn": "1.9.1",
+    "xgboost": "3.4.1",
+    "lightgbm": "4.7.0",
+    "shap": "0.54.1",
+    "pandas": "3.0.6"
+  }
+}
